@@ -74,19 +74,19 @@ To clear the example data, click **⚙** (Setup) on the facilitator page, then *
 
 | File | What's in it |
 |---|---|
-| `data/cases.json` | The hypothetical changes, deliberately ambiguous. Fifteen are written; a core set of 7 is switched on and the other 8 have `"active": false` (change it to `true` to bring one back). Each has an `id`, `title`, `summary`, and optional `upsides` / `downsides` bullets. It can also have a `suggestedPrinciple` (a rule the facilitator can reveal to get the discussion going) with a `suggestedSection`; participants never see these. Don't change an `id` once people have started answering. |
+| `data/cases.json` | The hypothetical changes, deliberately ambiguous. Fifteen are written. A core set of 8 is switched on, each aimed at a different section of the constitution; the other 7 have `"active": false` (change it to `true` to bring one back). Each has an `id`, `title`, `summary`, and optional `upsides` / `downsides` bullets. It can also have a `suggestedPrinciple` (a rule the facilitator can reveal to get the discussion going) with a `suggestedSection`; participants never see these. Don't change an `id` once people have started answering. |
 | `data/participants.json` | Optional, and empty by default: people type their own name when they join. If you'd rather they click their name in a list, add one `{ "name": "…" }` per person, with an optional `code` (used in personal links; defaults to the name) and `cases` (a fixed list of case ids). |
-| `data/workshop.json` | Everything else: the title and intro text, the four decision options, the reason tags, the principle categories and their export headings, voting options, thresholds, suggested minutes per step (`schedule`), and the storage settings. |
+| `data/workshop.json` | Everything else: the title and intro text, the four decision options, the reason tags, the principle categories and their export headings (a category can have its own `suggestedPrinciple`, offered in the Tidy step while that section is empty; Purpose has one), voting options, thresholds, suggested minutes per step (`schedule`), and the storage settings. |
 
 JSON is fussy about commas and quotes. If a file is broken, the app shows an
 error saying which file and roughly where.
 
 **Assignments.** Each person gets `assignment.casesPerParticipant` cases
-(6 of the 7 in the shipped settings, so everyone sees nearly the same set) when
+(6 of the 8 in the shipped settings, so everyone sees nearly the same set) when
 they join, picked so that every case gets a similar number of reviewers. With 6
 cases each, every case has at least 3 reviewers once 4 people have joined. As a
 rule of thumb, reviewers per case ≈ people × cases each ÷ number of cases (e.g.
-12 people × 6 ÷ 7 cases ≈ 10); the facilitator page shows the numbers under
+12 people × 6 ÷ 8 cases ≈ 9); the facilitator page shows the numbers under
 **⚙ Setup → Coverage**. Each person's cases are locked when they join, so
 nobody's work is reshuffled later. If you do list names in
 `participants.json`, people click theirs instead of typing it, cases are planned
@@ -175,10 +175,10 @@ wrap-up, which leaves 10 minutes spare in an hour and a half.
 
 | Step | What happens | Time |
 |---|---|---|
-| **1 Get ready** | Show the join link. People type their name and appear as they join. The card on the right says *✓ Connected* (or warns you if not). | 5 min |
+| **1 Get ready** | Show the join link. People type their name and appear as they join; meanwhile, talk them through *What we'll do*, the session at a glance. The card on the right says *✓ Connected* (or warns you if not). | 5 min |
 | **2 Review** | Everyone answers their cases on their own laptop. You see progress only; results stay hidden so nobody is swayed. | 15 min |
 | **3 Discuss** | Cases one at a time, most contested first (expect to get through the top 3–4 properly), with the split, the factors and everyone's reasons. **✚ Capture a principle** whenever the group lands on a rule. If discussion stalls, **💡 Show a suggested principle** reveals a prepared rule to test, and **Capture it** adds it (you can edit it first). The **← / →** keys move between cases. | 30 min |
-| **4 Tidy** | Give each principle a section, drop duplicates and fix the wording. Participants' proposals wait under *Needs a section*. | 5 min |
+| **4 Tidy** | Give each principle a section, drop duplicates and fix the wording. Participants' proposals wait under *Needs a section*. A section that's still empty has a **💡 Suggest a principle** button with a rule to test. | 5 min |
 | **5 Vote** | **Open voting**. Participants vote on their Principles tab and see a "Voting is open" banner. Watch the results live. **Adopt** clear winners (or use *Adopt all that reached 67%*). **Reword** ones with lots of *Amend* votes, which starts a fresh vote on the new wording. **Drop** the rest. | 20 min |
 | **6 Finish** | Download the draft constitution and the workshop record. | 5 min |
 

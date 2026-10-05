@@ -83,6 +83,8 @@ export function normaliseConfig(workshop = {}, casesFile = {}, rosterFile = {}, 
     label: c.label || c.id,
     heading: c.heading || c.label || c.id,
     prompt: c.prompt || '',
+    // Optional starter principle, offered in the Tidy step while the section is empty.
+    suggestedPrinciple: String(c.suggestedPrinciple || '').trim(),
   }));
   if (!categories.length) warnings.push('workshop.json has no principle categories.');
 

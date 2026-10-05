@@ -2161,6 +2161,75 @@ a.icon-btn { text-decoration: none; }
 .status-big.warn { color: var(--notice-ink); }
 .status-big.bad { color: var(--danger); }
 
+/* Step 1: the session at a glance */
+.plan-card { margin-bottom: 1rem; }
+
+.plan {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The line joining the numbers, from the first to the last */
+.plan::before {
+  content: "";
+  position: absolute;
+  top: calc(0.95rem - 1.5px);
+  left: 0.95rem;
+  right: calc((100% - 5rem) / 6 - 0.95rem);
+  height: 3px;
+  border-radius: 3px;
+  background: var(--rainbow-strong);
+  opacity: 0.55;
+}
+
+.plan li { margin: 0; }
+
+.plan-num {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  margin-bottom: 0.55rem;
+  border-radius: 50%;
+  background: var(--card-solid);
+  border: 2px solid var(--line-strong);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.plan li.current .plan-num { background: var(--primary); border-color: var(--primary); color: var(--surface); }
+
+.plan-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.45rem; font-size: 1.02rem; font-weight: 750; }
+
+.plan-time {
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: var(--surface-3);
+  color: var(--ink-3);
+  font-size: 0.78rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.plan-text { margin: 0.3rem 0 0; color: var(--ink-2); font-size: 0.9rem; line-height: 1.45; }
+
+@media (max-width: 1000px) {
+  .plan { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 1.2rem; }
+  .plan::before { display: none; }
+}
+
+@media (max-width: 600px) {
+  .plan { grid-template-columns: minmax(0, 1fr); }
+  .plan li { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 0.75rem; }
+  .plan-num { grid-row: span 2; margin: 0; }
+}
+
 .people { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
 .person {
@@ -2264,6 +2333,20 @@ a.icon-btn { text-decoration: none; }
 .section-panel.empty-section .section-head { margin-bottom: 0.4rem; }
 .section-panel.empty-section .section-head h2 { font-size: 1.1rem; }
 .section-panel.empty-section .drop-empty { padding: 0.5rem; font-size: 0.85rem; }
+
+/* Tidy: a starter principle for an empty section */
+.section-seed-btn { margin-top: 0.55rem; }
+
+.section-seed {
+  margin-top: 0.6rem;
+  padding: 0.75rem 0.9rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(var(--card-solid), var(--card-solid)) padding-box, var(--rainbow-strong) border-box;
+}
+
+.section-seed .seed-text { font-size: 1.12rem; margin: 0 0 0.6rem; }
+.section-seed .btn-row { align-items: center; }
 
 .principle.tidy .principle-text { margin: 0.2rem 0 0.55rem; }
 

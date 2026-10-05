@@ -17,6 +17,14 @@ test('the shipped data files load cleanly', () => {
   assert.equal(new Set(config.roster.map((p) => p.code)).size, config.roster.length);
 });
 
+test('every section of the constitution has at least one suggested principle', () => {
+  const config = realConfig();
+  for (const section of config.categories) {
+    const fromCases = config.cases.filter((c) => c.suggestedSection === section.id);
+    assert.ok(section.suggestedPrinciple || fromCases.length, `nothing suggests a principle for "${section.heading}"`);
+  }
+});
+
 test('Supabase is used only when both URL and key are set, and ?backend=local overrides', () => {
   const storage = { supabaseUrl: 'https://x.supabase.co', supabaseKey: 'sb_publishable_x' };
   assert.equal(normaliseConfig({ storage }).backend, 'supabase');

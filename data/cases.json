@@ -60,8 +60,8 @@
         "Published results no longer reproduce with the latest version",
         "Every active project would need to recalibrate"
       ],
-      "suggestedPrinciple": "A better fit to data justifies changing the model's behaviour, as long as earlier versions stay available to reproduce past analyses.",
-      "suggestedSection": "technical"
+      "suggestedPrinciple": "A new formulation replaces an established one only when it fits independent data better across several settings, and its effect on existing results is documented.",
+      "suggestedSection": "validation"
     },
     {
       "id": "not-who-approved",
@@ -108,6 +108,21 @@
       ],
       "suggestedPrinciple": "Code is held to the same review standard however it was written, and a named person must understand it and take responsibility for it.",
       "suggestedSection": "technical"
+    },
+    {
+      "id": "scenario-builder",
+      "title": "A friendlier interface that duplicates existing functionality",
+      "summary": "A high-level 'scenario builder' that lets new users set up common intervention scenarios in a few lines by wrapping existing functions. It creates a second way of doing things the package can already do.",
+      "upsides": [
+        "Lowers the barrier for new users and country teams",
+        "No new science to validate"
+      ],
+      "downsides": [
+        "Two ways to do the same thing",
+        "Must be kept in sync with every future change"
+      ],
+      "suggestedPrinciple": "The core package keeps one clear, documented way to do each task; friendlier interfaces for new users live in companion packages.",
+      "suggestedSection": "usability"
     },
     {
       "id": "bespoke-intervention",
@@ -220,22 +235,6 @@
       ],
       "suggestedPrinciple": "Breaking changes are allowed only in major releases, with a migration guide and a deprecation period.",
       "suggestedSection": "technical",
-      "active": false
-    },
-    {
-      "id": "scenario-builder",
-      "title": "A friendlier interface that duplicates existing functionality",
-      "summary": "A high-level 'scenario builder' that lets new users set up common intervention scenarios in a few lines by wrapping existing functions. It creates a second way of doing things the package can already do.",
-      "upsides": [
-        "Lowers the barrier for new users and country teams",
-        "No new science to validate"
-      ],
-      "downsides": [
-        "Two ways to do the same thing",
-        "Must be kept in sync with every future change"
-      ],
-      "suggestedPrinciple": "There should be one supported way to do each thing in the core package; convenience layers belong in separate packages.",
-      "suggestedSection": "usability",
       "active": false
     }
   ]

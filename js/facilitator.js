@@ -66,6 +66,7 @@ const F = {
     scale: storage.get('cw:facilitator:scale', 1),
     hideTips: storage.get('cw:facilitator:hide-tips', false),
     revealedSeeds: new Set(), // cases whose suggested principle is showing
+    sectionSeeds: new Set(), // empty sections whose suggested principle is showing (Tidy)
     editing: null,
     editDraft: null,
     exportOpts: { includeTallies: true, includeUnratified: false },
@@ -278,10 +279,10 @@ function header(r) {
 }
 
 const GUIDE = {
-  ready: () => html`Put this screen on the projector. Ask everyone to open the link below on their laptop and ${F.config.roster.length ? 'pick' : 'type'} their name. People appear under <b>Joined so far</b> as they arrive.`,
+  ready: () => html`Put this screen on the projector. Ask everyone to open the link below on their laptop and ${F.config.roster.length ? 'pick' : 'type'} their name. While they join (they appear under <b>Joined so far</b>), talk them through <b>What we'll do</b>.`,
   review: () => html`Everyone works through their cases on their own: where does each change belong, and why? The results stay hidden on this screen so nobody is swayed. Move on when most people have finished; anyone still going can carry on.`,
   discuss: () => html`Start at the top: these are the cases where people disagreed most. Ask someone from each side to explain their reasoning. When the group lands on a rule (“we'd only accept this if…”), click <b>Capture a principle</b>. If things stall, <b>💡 Show a suggested principle</b> gives the group a rule to test.`,
-  tidy: () => html`A quick tidy before voting: give every principle a section, drop duplicates, and fix the wording. Rewording after voting starts means everyone has to vote on that principle again.`,
+  tidy: () => html`A quick tidy before voting: give every principle a section, drop duplicates, and fix the wording. A section still empty? Ask the group for a rule, or click <b>💡 Suggest a principle</b> in that section.`,
   vote: () => html`Open voting and ask everyone to go to the <b>Principles</b> tab on their laptop. Adopt principles with clear support (${threshold()}% agree or more). If lots of people chose Amend, reword it using their suggestions: that starts a fresh vote on the new wording.`,
   finish: () => html`Download the draft constitution, and keep the workshop record for reference. You can go back to any step if you need to.`,
 };
@@ -319,6 +320,36 @@ function stepPage(stepId, body) {
 
 // ---- step 1: get ready -------------------------------------------------------------------------
 
+// The session at a glance, worded for participants, to talk through while
+// people join. Same numbers as the steps along the top; times from `schedule`.
+const PLAN = {
+  ready: { label: 'Join', text: () => `Open the link and ${F.config.roster.length ? 'pick' : 'type'} your name.` },
+  review: { text: () => 'On your own, decide where each proposed change belongs, and why.' },
+  discuss: { text: () => 'Together, we talk through the most contested cases and capture principles.' },
+  tidy: { text: () => 'We sort the principles into sections.' },
+  vote: { text: () => `On your laptop, vote ${orList(F.config.votes.map((v) => v.label))} on each principle.` },
+  finish: { text: () => 'The adopted principles become a first draft of the constitution.' },
+};
+
+const orList = (items) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} or ${items.at(-1)}` : items[0] || '');
+
+function planCard() {
+  const minutes = (id) => Number(F.config.schedule[id]) || 0;
+  return html`<section class="card plan-card">
+    <h2 class="card-title">What we'll do</h2>
+    <ol class="plan">
+      ${STEPS.map((s, i) => {
+        const time = s.id === 'ready' ? 'now' : minutes(s.id) ? `${minutes(s.id)} min` : '';
+        return html`<li class="${s.id === 'ready' ? 'current' : ''}">
+          <span class="plan-num" aria-hidden="true">${i + 1}</span>
+          <span class="plan-title">${PLAN[s.id].label || s.label}${time ? html` <span class="plan-time">${time}</span>` : ''}</span>
+          <p class="plan-text">${PLAN[s.id].text()}</p>
+        </li>`;
+      })}
+    </ol>
+  </section>`;
+}
+
 function readyView() {
   const rosterCodes = new Set(F.config.roster.map((p) => p.code));
   const joinedCodes = new Set(F.joined.map((p) => p.code));
@@ -346,6 +377,7 @@ function readyView() {
           <p class="muted small">Workshop space: <code>${F.config.id}</code>${params.get('ws') ? ' (a separate practice space)' : ''}</p>
         </section>
       </div>
+      ${planCard()}
       <section class="card">
         <h2 class="card-title">Joined so far: ${F.joined.length}${F.config.roster.length ? html` <span class="muted">of ${F.config.roster.length} on the list</span>` : ''}</h2>
         ${F.joined.length
@@ -584,21 +616,15 @@ function tidyView() {
   const active = F.principles.filter((p) => p.status !== 'parked');
   const dropped = sortPrinciples(F.principles.filter((p) => p.status === 'parked'));
   const unsorted = principlesIn('unsorted').filter((p) => p.status !== 'parked');
-  if (!F.principles.length) {
-    return stepPage(
-      'tidy',
-      html`<div class="card empty">
-        <p>No principles yet. Go back to step 3 to capture some, or add one here.</p>
-        <button class="btn btn-primary" data-action="new-principle">✚ Add a principle</button>
-      </div>`,
-    );
-  }
+  const empty = F.config.categories.filter((c) => !principlesIn(c.id).some((p) => p.status !== 'parked'));
   return stepPage(
     'tidy',
     html`
       <div class="toolbar">
         <button class="btn btn-secondary" data-action="new-principle">✚ Add a principle</button>
-        <span class="muted small">${plural(active.length, 'principle')}${unsorted.length ? ` · ${unsorted.length} still need a section` : ' · all have a section ✓'}</span>
+        <span class="muted small">${active.length
+          ? `${plural(active.length, 'principle')}${unsorted.length ? ` · ${unsorted.length} still need a section` : ' · all have a section ✓'}`
+          : 'No principles yet: capture some in step 3, or start from the suggestions below.'}${empty.length && active.length ? ` · ${plural(empty.length, 'section')} still empty` : ''}</span>
       </div>
       <div class="sections">
         ${unsorted.length ? tidySection({ id: 'unsorted', heading: 'Needs a section', prompt: 'Pick a section for each of these, or drag them into place.' }, unsorted, true) : ''}
@@ -616,6 +642,7 @@ function tidyView() {
 }
 
 function tidySection(category, items, highlight = false) {
+  const suggestion = items.length || highlight ? null : sectionSuggestions(category.id)[0];
   return html`<section class="section-panel ${highlight ? 'unsorted' : ''} ${items.length ? '' : 'empty-section'}">
     <header class="section-head">
       <div>
@@ -626,7 +653,35 @@ function tidySection(category, items, highlight = false) {
     <ol class="principle-list" data-drop="${category.id}">
       ${items.length ? items.map((p) => tidyCard(p)) : html`<li class="drop-empty">Empty: drag a principle here, or pick “${category.label}” from a principle's section menu.</li>`}
     </ol>
+    ${suggestion ? sectionSeed(category, suggestion) : ''}
   </section>`;
+}
+
+// Starter principles for a section with nothing in it yet: the section's own
+// suggestion (workshop.json), then those of the cases aimed at it. Ones already
+// captured (in any section, even if dropped since) aren't offered again.
+function sectionSuggestions(categoryId) {
+  const category = F.config.categories.find((c) => c.id === categoryId);
+  const taken = new Set(F.principles.map((p) => p.text.trim()));
+  return [
+    ...(category?.suggestedPrinciple ? [{ text: category.suggestedPrinciple, caseId: '' }] : []),
+    ...F.config.cases.filter((c) => c.suggestedSection === categoryId && c.suggestedPrinciple).map((c) => ({ text: c.suggestedPrinciple, caseId: c.id })),
+  ].filter((s) => !taken.has(s.text.trim()));
+}
+
+function sectionSeed(category, suggestion) {
+  if (!F.ui.sectionSeeds.has(category.id)) {
+    return html`<button class="btn btn-quiet btn-small section-seed-btn" data-action="toggle-section-seed" data-section="${category.id}">💡 Suggest a principle</button>`;
+  }
+  const source = suggestion.caseId ? casesById.get(suggestion.caseId) : null;
+  return html`<div class="section-seed">
+    <p class="seed-text">${suggestion.text}</p>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-small" data-action="capture-section-seed" data-section="${category.id}">Capture it</button>
+      <button class="btn-link small" data-action="toggle-section-seed" data-section="${category.id}">Hide</button>
+      ${source ? html`<span class="muted small">From case ${source.number}: ${source.title}</span>` : ''}
+    </div>
+  </div>`;
 }
 
 function sectionSelect(p) {
@@ -1211,6 +1266,17 @@ const clickHandlers = {
   'capture-seed'(el) {
     const c = casesById.get(el.dataset.case);
     if (c) openPrincipleDialog({ caseId: c.id, text: c.suggestedPrinciple, category: c.suggestedSection });
+  },
+  'toggle-section-seed'(el) {
+    const id = el.dataset.section;
+    if (F.ui.sectionSeeds.has(id)) F.ui.sectionSeeds.delete(id);
+    else F.ui.sectionSeeds.add(id);
+    render({ force: true });
+  },
+  'capture-section-seed'(el) {
+    const id = el.dataset.section;
+    const s = sectionSuggestions(id)[0];
+    if (s) openPrincipleDialog({ caseId: s.caseId, text: s.text, category: id });
   },
   'set-status'(el) {
     if (el.dataset.status === 'ratified') sparkleBurst(el, { count: 18, spread: 95 });
