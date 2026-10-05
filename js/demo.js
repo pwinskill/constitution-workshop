@@ -128,7 +128,8 @@ export function generateDemo(config, assignments, { seed = 11, completion = 0.85
   }
 
   const categoryIds = new Set(['unsorted', ...config.categories.map((c) => c.id)]);
-  const principles = PRINCIPLES.filter(([category]) => categoryIds.has(category)).map(([category, text, status], i) => ({
+  const usable = PRINCIPLES.filter(([category]) => categoryIds.has(category));
+  const principles = usable.map(([category, text, status], i) => ({
     id: uuid(),
     text,
     category,
@@ -136,7 +137,7 @@ export function generateDemo(config, assignments, { seed = 11, completion = 0.85
     status,
     version: 1,
     source_case_id: null,
-    proposed_by: i === PRINCIPLES.length - 1 ? people[0]?.code || 'participant' : 'facilitator',
+    proposed_by: i === usable.length - 1 ? people[0]?.code || 'participant' : 'facilitator',
     created_at: stamp(),
   }));
 
@@ -166,7 +167,9 @@ function demoPeople(config) {
   const caseIds = config.cases.map((c) => c.id);
   const assigned = new Map();
   return DEMO_NAMES.map((name) => {
-    const code = slugify(name);
+    // Like real joiners' codes, these aren't just the name, so typing "Ross"
+    // asks "Is that you?" in the demo too.
+    const code = `${slugify(name)}-demo`;
     const cases = assignGuest(code, caseIds, assigned, config.assignment);
     assigned.set(code, cases);
     return { code, name, cases };

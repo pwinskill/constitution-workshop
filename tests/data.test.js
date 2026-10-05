@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { normaliseConfig } from '../js/data.js';
+import { suggestionsFor } from '../js/suggest.js';
 import { realConfig } from './helpers.js';
 
 test('the shipped data files load cleanly', () => {
@@ -20,9 +21,23 @@ test('the shipped data files load cleanly', () => {
 test('every section of the constitution has at least one suggested principle', () => {
   const config = realConfig();
   for (const section of config.categories) {
-    const fromCases = config.cases.filter((c) => c.suggestedSection === section.id);
-    assert.ok(section.suggestedPrinciple || fromCases.length, `nothing suggests a principle for "${section.heading}"`);
+    assert.ok(suggestionsFor(config, [], section.id).length, `nothing suggests a principle for "${section.heading}"`);
   }
+});
+
+test('section suggestions must be text; schedule times and the minimum reviewers are checked', () => {
+  const config = normaliseConfig({
+    categories: [{ id: 'a', suggestedPrinciple: '  Padded.  ' }, { id: 'b', suggestedPrinciple: ['x', 'y'] }, { id: 'c' }],
+    schedule: { _readme: 'notes', review: 10, discuss: -5, tidy: 0, vote: 'soon' },
+    assignment: { minReviewsPerCase: 2.5 },
+  });
+  assert.deepEqual(config.categories.map((c) => c.suggestedPrinciple), ['Padded.', '', '']);
+  assert.deepEqual(config.schedule, { review: 10, discuss: 30, tidy: 0, vote: 20, finish: 5 });
+  assert.equal(config.assignment.minReviews, 3);
+  const warnings = config.warnings.join('\n');
+  for (const expected of [/"b" section/, /schedule\.discuss/, /schedule\.vote/, /minReviewsPerCase/]) assert.match(warnings, expected);
+  assert.doesNotMatch(warnings, /schedule\.(review|tidy|_readme)/);
+  assert.equal(normaliseConfig({ assignment: { minReviewsPerCase: 0 } }).assignment.minReviews, 0);
 });
 
 test('Supabase is used only when both URL and key are set, and ?backend=local overrides', () => {

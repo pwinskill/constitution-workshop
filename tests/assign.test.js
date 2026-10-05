@@ -67,12 +67,8 @@ test('with no list, people joining one at a time still get balanced coverage', (
 });
 
 test('guests get the least-covered cases', () => {
-  const plan = planAssignments(roster, caseIds, config.assignment);
-  const coverage = coverageCounts(plan, caseIds);
-  const min = Math.min(...coverage.values());
-  const guest = assignGuest('guest', caseIds, plan, config.assignment);
-  assert.equal(guest.length, config.assignment.perParticipant);
-  const leastCovered = caseIds.filter((id) => coverage.get(id) === min);
-  const expected = Math.min(leastCovered.length, guest.length);
-  assert.equal(guest.filter((id) => coverage.get(id) === min).length, expected);
+  const ids = ['a', 'b', 'c', 'd', 'e'];
+  const current = new Map([['p1', ['a', 'b', 'c']], ['p2', ['a', 'b']], ['p3', ['a']]]);
+  assert.deepEqual(assignGuest('g', ids, current, { perParticipant: 2, seed: 1 }).sort(), ['d', 'e']);
+  assert.deepEqual(assignGuest('g', ids, current, { perParticipant: 3, seed: 1 }).sort(), ['c', 'd', 'e']);
 });

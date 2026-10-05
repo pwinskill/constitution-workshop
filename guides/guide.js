@@ -5,18 +5,27 @@
 (function () {
   var given = new URLSearchParams(location.search).get('url');
   var base = null;
-  if (given) base = /^https?:\/\//i.test(given) ? given : 'https://' + given;
-  else if (/^https?:$/.test(location.protocol)) base = new URL('../', location.href).href;
+  try {
+    if (given) base = new URL(/^https?:\/\//i.test(given) ? given : 'https://' + given);
+    else if (/^https?:$/.test(location.protocol)) base = new URL('../', location.href);
+  } catch (e) {
+    base = null; // not a usable address: leave the blanks
+  }
   if (!base) return;
-  base = base.replace(/(index\.html|facilitator\.html)?([?#].*)?$/i, '');
-  if (!/\/$/.test(base)) base += '/';
+  // The app's folder: without any page name (index.html, facilitator.html, a
+  // guide), a trailing guides/, or anything after a ? or #.
+  base.search = '';
+  base.hash = '';
+  var path = base.pathname.replace(/[^/]*\.html?$/i, '').replace(/guides\/$/i, '');
+  base.pathname = /\/$/.test(path) ? path : path + '/';
+  var root = base.href;
   document.querySelectorAll('[data-link]').forEach(function (slot) {
-    var href = base + slot.getAttribute('data-link');
+    var href = root + slot.getAttribute('data-link');
     var a = document.createElement('a');
     a.href = href;
     a.className = 'url';
     // Allow line breaks after each "/" rather than in the middle of a word.
-    var parts = href.replace(/^https?:\/\//, '').replace(/\/$/, '').split('/');
+    var parts = href.replace(/^https?:\/\//i, '').replace(/\/$/, '').split('/');
     parts.forEach(function (part, i) {
       a.appendChild(document.createTextNode(i < parts.length - 1 ? part + '/' : part));
       if (i < parts.length - 1) a.appendChild(document.createElement('wbr'));

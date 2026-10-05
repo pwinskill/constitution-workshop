@@ -102,7 +102,7 @@ export function logo(size = 34) {
       <stop offset=".76" stop-color="#6ad3e8"/><stop offset="1" stop-color="#b08cff"/>
     </linearGradient></defs>
     <path d="M20 2.5 35.2 11.25v17.5L20 37.5 4.8 28.75v-17.5Z" fill="var(--logo-bg)" stroke="url(#${id})" stroke-width="2.6" stroke-linejoin="round"/>
-    <g stroke="url(#${id})" stroke-width="1.6" stroke-linecap="round">
+    <g fill="none" stroke="url(#${id})" stroke-width="1.6" stroke-linecap="round">
       <path d="M13 15 20 12l7 4M13 15l7 7 7-6M20 22l-6 5M20 22l7 5M13 15v10"/>
     </g>
     <g fill="var(--logo-dot)">
@@ -238,6 +238,21 @@ export function installTooltips() {
 // Re-renders `root` from `view()`, but holds off while someone is typing in a
 // field inside it (or while `hold()` is active, e.g. during a drag) and
 // catches up as soon as they stop.
+// Re-rendering replaces the page, which would drop keyboard focus back to the
+// top. This names the focused button or link (by id, or by its action and
+// target) so the same control can be focused again afterwards. Text fields are
+// left alone: renders wait while one is in use.
+const FOCUS_KEYS = ['action', 'id', 'section', 'case', 'status', 'dir', 'what', 'vote', 'pid', 'code', 'step', 'op'];
+function focusKey(root) {
+  const el = document.activeElement;
+  if (!el || el === document.body || !root.contains(el) || el.matches('input:not([type=checkbox]):not([type=radio]), textarea')) return null;
+  if (el.id) return `#${CSS.escape(el.id)}`;
+  const attrs = FOCUS_KEYS.filter((k) => el.dataset[k] != null).map((k) => `[data-${k}="${CSS.escape(el.dataset[k])}"]`);
+  if (attrs.length) return `${el.tagName.toLowerCase()}${attrs.join('')}`;
+  const href = el.getAttribute('href');
+  return href ? `a[href="${CSS.escape(href)}"]` : null;
+}
+
 export function createRenderer(root, view, afterRender = () => {}) {
   let pending = false;
   let holds = 0;
@@ -273,9 +288,11 @@ export function createRenderer(root, view, afterRender = () => {}) {
       return;
     }
     pending = false;
+    const focused = focusKey(root);
     root.innerHTML = view();
     fitLabels(root);
     afterRender(root);
+    if (focused && !root.contains(document.activeElement)) root.querySelector(focused)?.focus({ preventScroll: true });
   }
   root.addEventListener('focusout', catchUp);
   window.addEventListener('resize', () => fitLabels(root));

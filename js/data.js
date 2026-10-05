@@ -84,8 +84,13 @@ export function normaliseConfig(workshop = {}, casesFile = {}, rosterFile = {}, 
     heading: c.heading || c.label || c.id,
     prompt: c.prompt || '',
     // Optional starter principle, offered in the Tidy step while the section is empty.
-    suggestedPrinciple: String(c.suggestedPrinciple || '').trim(),
+    suggestedPrinciple: typeof c.suggestedPrinciple === 'string' ? c.suggestedPrinciple.trim() : '',
   }));
+  for (const c of workshop.categories || []) {
+    if (c.suggestedPrinciple != null && typeof c.suggestedPrinciple !== 'string') {
+      warnings.push(`The suggestedPrinciple for the "${c.id}" section in workshop.json should be text in quotes; ignoring it.`);
+    }
+  }
   if (!categories.length) warnings.push('workshop.json has no principle categories.');
 
   // Cases ("active": false switches a case off without deleting it)
@@ -147,6 +152,20 @@ export function normaliseConfig(workshop = {}, casesFile = {}, rosterFile = {}, 
 
   const assignment = workshop.assignment || {};
   const review = workshop.review || {};
+  const minReviews = Number(assignment.minReviewsPerCase ?? 3);
+  if (!Number.isInteger(minReviews) || minReviews < 0) {
+    warnings.push('assignment.minReviewsPerCase in workshop.json should be a whole number (e.g. 3); using 3.');
+  }
+
+  // Suggested minutes per step: shown in the plan on step 1, and as a timer on
+  // the steps that have one. 0 hides a time.
+  const schedule = { review: 15, discuss: 30, tidy: 5, vote: 20, finish: 5 };
+  for (const [step, minutes] of Object.entries(workshop.schedule || {})) {
+    if (step.startsWith('_')) continue;
+    const n = Number(minutes);
+    if (minutes !== null && minutes !== '' && Number.isFinite(n) && n >= 0) schedule[step] = n;
+    else warnings.push(`schedule.${step} in workshop.json should be a number of minutes (0 or more); ignoring it.`);
+  }
   const perParticipant = Math.max(1, Math.min(cases.length || 1, Number(assignment.casesPerParticipant) || 4));
 
   return {
@@ -164,7 +183,7 @@ export function normaliseConfig(workshop = {}, casesFile = {}, rosterFile = {}, 
     assignment: {
       perParticipant,
       seed: Number(assignment.seed) || 1,
-      minReviews: Number(assignment.minReviewsPerCase) || 3,
+      minReviews: Number.isInteger(minReviews) && minReviews >= 0 ? minReviews : 3,
     },
     review: {
       requireRationale: review.requireRationale !== false,
@@ -188,8 +207,7 @@ export function normaliseConfig(workshop = {}, casesFile = {}, rosterFile = {}, 
       title: workshop.export?.title || 'malariasimulation constitution',
       preamble: workshop.export?.preamble || '',
     },
-    // Suggested minutes for each facilitator step (0 hides that step's timer).
-    schedule: { review: 15, discuss: 30, tidy: 5, vote: 20, ...(workshop.schedule || {}) },
+    schedule,
     cases,
     inactiveCases,
     roster,

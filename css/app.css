@@ -521,7 +521,7 @@ code {
   flex-wrap: wrap;
 }
 
-.who { font-weight: 650; }
+.who { font-weight: 650; min-width: 0; overflow-wrap: anywhere; }
 
 .topbar .btn-link { color: var(--bar-ink-2); font-size: 0.86rem; }
 .topbar .btn-link:hover { color: var(--bar-ink); }
@@ -617,6 +617,10 @@ code {
   text-underline-offset: 2px;
   cursor: pointer;
 }
+
+.btn-link.small { font-size: 0.86rem; }
+
+.nowrap { white-space: nowrap; }
 
 .icon-btn {
   display: inline-grid;
@@ -986,6 +990,7 @@ select:focus {
 .input-row input { flex: 1; min-width: 0; }
 
 .form-error { color: var(--danger); font-weight: 600; margin: 0.25rem 0 0; }
+.form-hint { color: var(--ink-2); margin: 0.35rem 0 0; }
 
 .guest-offer {
   margin-top: 0.5rem;
@@ -1026,7 +1031,7 @@ select:focus {
 /* ---- participant home ----------------------------------------------------------------------- */
 
 .hero { position: relative; margin: 0.5rem 0 1.5rem; }
-.hero h1 { font-size: 2.4rem; margin-bottom: 0.4rem; }
+.hero h1 { font-size: 2.4rem; margin-bottom: 0.4rem; overflow-wrap: anywhere; }
 .hero-compact h1 { font-size: 2rem; }
 
 .progress-card {
@@ -2151,10 +2156,18 @@ a.icon-btn { text-decoration: none; }
   font-size: clamp(1.1rem, 2.6vw, 2rem);
   font-weight: 650;
   line-height: 1.25;
-  overflow-wrap: anywhere;
   margin: 0.25rem 0 0.9rem;
   color: var(--ink);
 }
+
+.join-big .url-part { white-space: nowrap; }
+
+@media (max-width: 420px) {
+  .join-big .url-part { white-space: normal; overflow-wrap: anywhere; }
+}
+
+.joined-count { display: flex; align-items: baseline; gap: 0.5rem; margin: 0.5rem 0 0.4rem; color: var(--ink-2); font-weight: 600; }
+.joined-figure { font-size: 2.4rem; font-weight: 750; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
 
 .status-big { font-size: 1.5rem; font-weight: 750; margin: 0 0 0.35rem; }
 .status-big.ok { color: var(--ok); }
@@ -2162,7 +2175,7 @@ a.icon-btn { text-decoration: none; }
 .status-big.bad { color: var(--danger); }
 
 /* Step 1: the session at a glance */
-.plan-card { margin-bottom: 1rem; }
+.plan-card { margin-bottom: 1rem; container-type: inline-size; }
 
 .plan {
   position: relative;
@@ -2211,26 +2224,34 @@ a.icon-btn { text-decoration: none; }
   padding: 0.05rem 0.5rem;
   border-radius: 999px;
   background: var(--surface-3);
-  color: var(--ink-3);
-  font-size: 0.78rem;
+  color: var(--ink-2);
+  font-size: 0.85rem;
   font-weight: 650;
   white-space: nowrap;
 }
 
 .plan-text { margin: 0.3rem 0 0; color: var(--ink-2); font-size: 0.9rem; line-height: 1.45; }
 
-@media (max-width: 1000px) {
+/* Wrap by the card's width in rem, so bigger text (A+) wraps sooner. */
+@container (max-width: 58rem) {
   .plan { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 1.2rem; }
   .plan::before { display: none; }
 }
 
-@media (max-width: 600px) {
+@container (max-width: 33rem) {
   .plan { grid-template-columns: minmax(0, 1fr); }
   .plan li { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 0.75rem; }
   .plan-num { grid-row: span 2; margin: 0; }
 }
 
+/* The rainbow line looks muddy at half strength on a dark background. */
+:root[data-theme="dark"] .plan::before { opacity: 0.85; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .plan::before { opacity: 0.85; }
+}
+
 .people { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.people .person { max-width: 100%; overflow-wrap: anywhere; }
 
 .person {
   display: inline-flex;
@@ -2345,6 +2366,7 @@ a.icon-btn { text-decoration: none; }
   background: linear-gradient(var(--card-solid), var(--card-solid)) padding-box, var(--rainbow-strong) border-box;
 }
 
+.section-seed .seed-head { margin-bottom: 0.35rem; }
 .section-seed .seed-text { font-size: 1.12rem; margin: 0 0 0.6rem; }
 .section-seed .btn-row { align-items: center; }
 
@@ -2436,3 +2458,6 @@ a.icon-btn { text-decoration: none; }
 .seed-head .eyebrow { margin: 0; }
 .seed-text { font-family: var(--font-serif); font-size: 1.45rem; line-height: 1.35; margin: 0.5rem 0 0.8rem; }
 .seed-ask { margin: 0.6rem 0 0; }
+
+/* Facilitator: keep focused controls clear of the sticky Next bar when tabbing. */
+html:has(.step-nav) { scroll-padding-bottom: 6rem; }

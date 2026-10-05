@@ -1,5 +1,5 @@
 {
-  "_readme": "Workshop settings. Edit freely; the app reloads this file on every page load. See README.md for details of each field.",
+  "_readme": "Workshop settings. Edit freely; the app reloads this file on every page load. README.md explains the main fields.",
 
   "id": "constitution-2026",
   "title": "malariasimulation constitution workshop",
@@ -15,6 +15,7 @@
   "facilitatorKey": "",
 
   "join": {
+    "_readme": "Only used when data/participants.json lists names: show them as buttons to click, and let people who aren't listed join as guests.",
     "showNameList": true,
     "allowGuests": true
   },
@@ -58,7 +59,7 @@
   "categories": [
     { "id": "purpose", "label": "Purpose", "heading": "Purpose", "prompt": "What is malariasimulation for, and who is it for?", "suggestedPrinciple": "malariasimulation exists to answer policy questions about malaria transmission and control that recur across many settings, not to serve any single project." },
     { "id": "scope", "label": "Scope", "heading": "Scope", "prompt": "What belongs in the core model, and what belongs elsewhere in the malariaverse?" },
-    { "id": "evidence", "label": "Scientific evidence", "heading": "Scientific standards", "prompt": "What evidence should a new mechanism or intervention need?" },
+    { "id": "evidence", "label": "Scientific standards", "heading": "Scientific standards", "prompt": "What evidence should a new mechanism or intervention need?" },
     { "id": "validation", "label": "Validation", "heading": "Validation", "prompt": "How must changes be tested and validated before they are merged?" },
     { "id": "technical", "label": "Technical standards", "heading": "Technical standards", "prompt": "Code quality, testing, dependencies, interfaces and backwards compatibility." },
     { "id": "performance", "label": "Performance", "heading": "Performance and complexity", "prompt": "How much runtime or complexity is a feature allowed to cost?" },
@@ -74,11 +75,12 @@
   ],
 
   "schedule": {
-    "_readme": "Suggested minutes for each facilitator step; each step page shows a timer you can start. Use 0 to hide a timer.",
+    "_readme": "Suggested minutes per step, shown in the plan on step 1; Review, Discuss, Tidy and Vote also get a timer you can start. Use 0 to hide a time.",
     "review": 15,
     "discuss": 30,
     "tidy": 5,
-    "vote": 20
+    "vote": 20,
+    "finish": 5
   },
 
   "ratification": {

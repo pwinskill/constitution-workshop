@@ -88,6 +88,34 @@ export function plural(n, one, many = `${one}s`) {
   return `${n} ${n === 1 ? one : many}`;
 }
 
+// "A", "A or B", "A, B or C"
+export function orList(items) {
+  return items.length > 1 ? `${items.slice(0, -1).join(', ')} or ${items.at(-1)}` : items[0] || '';
+}
+
+// A link as people read it off a screen and type it in: browsers add the https:// themselves.
+export function displayUrl(url) {
+  return String(url).replace(/^https?:\/\//i, '').replace(/\/$/, '');
+}
+
+// The promise's value, or `fallback` if it fails or takes longer than `ms`
+// (the work itself carries on in the background).
+export function within(promise, ms, fallback = null) {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms);
+    Promise.resolve(promise).then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(fallback);
+      },
+    );
+  });
+}
+
 export function formatDateTime(date = new Date()) {
   const d = date instanceof Date ? date : new Date(date);
   const pad = (n) => String(n).padStart(2, '0');

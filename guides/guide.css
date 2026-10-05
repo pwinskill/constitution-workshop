@@ -102,7 +102,7 @@ a { color: inherit; }
 }
 
 .steps > li > b:first-child,
-.steps > li.with-pic > div > b:first-child { display: block; font-size: 11pt; margin-bottom: 0.6mm; }
+.steps > li > div > b:first-child { display: block; font-size: 11pt; margin-bottom: 0.6mm; }
 
 .steps > li img { display: block; margin: 2mm 0 1mm; border: 0.3mm solid #e2dcef; border-radius: 2.5mm; }
 .steps > li img.wide { width: 100%; }
@@ -238,7 +238,7 @@ figcaption { font-size: 8.5pt; color: #6a6784; margin-top: 1.2mm; }
 .trouble { list-style: none; padding: 0; }
 .trouble li { padding: 2mm 0; border-bottom: 0.3mm solid #ece7f5; margin: 0; break-inside: avoid; }
 .trouble li:last-child { border-bottom: 0; }
-.trouble b { margin-right: 1mm; }
+.trouble li > b:first-child { margin-right: 1mm; }
 
 /* In a browser rather than on paper: a page on a desk. */
 @media screen {

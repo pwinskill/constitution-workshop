@@ -157,6 +157,27 @@ test('a wrong key gives a helpful error and keeps the write queued', async () =>
   assert.match(store.lastError().message, /supabaseKey/);
 });
 
+test('a join the database refuses is reported, not left waiting in the outbox', async () => {
+  const store = make({ key: 'sb_publishable_wrong' });
+  await assert.rejects(store.addParticipant({ code: 'amara-x1', name: 'Amara', cases: ['a'], guest: true }), /refused access/);
+  assert.equal(store.pendingCount(), 0);
+});
+
+test('joining while offline on a first visit survives a reload', async () => {
+  mock.offline = true;
+  const { queued } = await make().addParticipant({ code: 'pat-x1', name: 'Pat', cases: ['a'], guest: true });
+  assert.equal(queued, true);
+  // "Reload", with no list ever read in this browser: the waiting join still shows.
+  const reloaded = make();
+  assert.deepEqual((await reloaded.listParticipants({ cache: true })).map((p) => p.code), ['pat-x1']);
+  assert.equal(reloaded.readOk(), false);
+  // Without the cache (the facilitator page), being offline is still an error.
+  await assert.rejects(reloaded.listParticipants());
+  mock.offline = false;
+  await reloaded.flush();
+  assert.deepEqual(mock.tables.participants.map((p) => p.code), ['pat-x1']);
+});
+
 test('connection check reads and writes every table, then cleans up', async () => {
   const results = await make().check();
   assert.equal(results.length, 8);

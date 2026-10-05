@@ -3,6 +3,7 @@
 import { assignGuest, coverageCounts, currentAssignments, planAssignments } from './assign.js';
 import { byId, categoryList, loadConfig } from './data.js';
 import { html } from './html.js';
+import { matchPerson } from './people.js';
 import { createStore } from './store.js';
 import {
   createRenderer,
@@ -18,7 +19,7 @@ import {
   toast,
   voteVars,
 } from './ui.js';
-import { copyText, plural, randomSuffix, sameName, slugify, storage, uuid } from './util.js';
+import { copyText, plural, randomSuffix, slugify, storage, uuid, within } from './util.js';
 
 const root = document.getElementById('app');
 const params = new URLSearchParams(location.search);
@@ -35,7 +36,7 @@ const S = {
   voteDrafts: new Map(), // principleId -> unsaved comment
   proposeDraft: {}, // unsent "propose a principle" form
   notified: new Set(), // voting items we've already told this person about
-  join: { query: '', error: '', guestName: '', sameNameGuest: null },
+  join: { query: '', error: '', hint: '', guestName: '', sameName: [] },
   online: true,
   signature: '',
 };
@@ -87,22 +88,15 @@ function everyone() {
 // With nobody listed in participants.json, everyone simply types their name to join.
 const openJoin = () => !S.config.roster.length;
 
-// Codes match exactly; names match roster people directly, but a name that
-// matches a guest needs confirming (two different people can share a name).
-function findPerson(query) {
-  const q = query.trim();
-  if (!q) return { person: null };
-  const code = slugify(q);
-  const all = everyone();
-  const byCode = all.find((p) => p.code === code);
-  if (byCode && (isRoster(byCode) || code === q.toLowerCase())) return { person: byCode };
-  const rosterMatch = S.config.roster.find((p) => sameName(p.name, q));
-  if (rosterMatch) return { person: rosterMatch };
-  const guestMatch = all.find((p) => !isRoster(p) && sameName(p.name, q));
-  return guestMatch ? { person: guestMatch, confirm: true } : { person: null };
-}
+// What a typed name or code matches: { person } to join straight away, or
+// { matches } to confirm (see people.js).
+const findPerson = (query) => matchPerson(query, everyone(), new Set(S.config.roster.map((p) => p.code)));
 
-const isRoster = (person) => S.config.roster.some((r) => r.code === person.code);
+// "at 10:42", for telling apart people with the same name.
+function joinedTime(person, prefix) {
+  const at = person.created_at ? new Date(person.created_at) : null;
+  return at && !Number.isNaN(at.getTime()) ? `${prefix}${at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '';
+}
 
 // A draft counts only if it differs from the saved answer.
 function sameAnswer(a, b) {
@@ -184,6 +178,7 @@ function joinView() {
   const { config } = S;
   const open = openJoin();
   const names = open ? [] : everyone();
+  const same = S.join.sameName;
   return html`<main class="join">
     <section class="join-card card">
       ${sparkles(10, { seed: 5 })}
@@ -195,17 +190,12 @@ function joinView() {
         <label for="who">${open ? 'Your name' : 'Your name or participant code'}</label>
         <div class="input-row">
           <input id="who" name="who" value="${S.join.query}" placeholder="e.g. ${names[0]?.name || 'Ross'}" maxlength="60" required>
-          <button class="btn btn-primary" type="submit">${open ? 'Join' : 'Continue'}</button>
+          <button class="btn ${same.length ? 'btn-secondary' : 'btn-primary'}" type="submit">${open ? 'Join' : 'Continue'}</button>
         </div>
         ${S.join.error ? html`<p class="form-error" role="alert">${S.join.error}</p>` : ''}
-        ${S.join.sameNameGuest
-          ? html`<div class="guest-offer" role="alert">
-              <p>Someone called “${S.join.sameNameGuest.name}” has already joined. Is that you?</p>
-              <div class="btn-row">
-                <button class="btn btn-primary" type="button" data-action="pick" data-code="${S.join.sameNameGuest.code}">Yes, that's me</button>
-                ${S.join.guestName ? html`<button class="btn btn-secondary" type="button" data-action="join-guest">No, I'm someone else</button>` : ''}
-              </div>
-            </div>`
+        ${S.join.hint ? html`<p class="form-hint" role="status">${S.join.hint}</p>` : ''}
+        ${same.length
+          ? sameNamePrompt(same, open || config.join.allowGuests)
           : S.join.guestName
             ? html`<div class="guest-offer">
                 <p>Not on the list? You can join as a guest and we'll give you some cases.</p>
@@ -222,6 +212,23 @@ function joinView() {
     </section>
     <p class="join-foot muted small">${S.store.kind === 'local' ? 'Demo mode: answers are stored in this browser only.' : ''}</p>
   </main>`;
+}
+
+// The typed name is already taken: is this one of those people, back on
+// another device, or someone else with the same name?
+function sameNamePrompt(same, allowNew) {
+  const name = same[0].name;
+  return html`<div class="guest-offer" role="alert">
+    <p>${same.length === 1
+      ? `Someone called “${name}” has already joined${joinedTime(same[0], ' at ')}. Is that you?`
+      : `${same.length} people called “${name}” have already joined. Which one are you?`}</p>
+    <div class="btn-row">
+      ${same.length === 1
+        ? html`<button class="btn btn-primary" type="button" data-action="pick" data-code="${same[0].code}">Yes, that's me</button>`
+        : same.map((p) => html`<button class="btn btn-secondary" type="button" data-action="pick" data-code="${p.code}">${p.name}${joinedTime(p, ', joined ')}</button>`)}
+      ${allowNew ? html`<button class="btn btn-quiet" type="button" data-action="join-different">No, I'm a different ${name}</button>` : ''}
+    </div>
+  </div>`;
 }
 
 function homeView() {
@@ -467,9 +474,9 @@ function principlesView() {
           <textarea id="p-text" name="text" rows="3" required
             placeholder="e.g. New mechanisms must be general enough to justify long-term inclusion in the core model.">${S.proposeDraft.text || ''}</textarea>
           <div class="field-row">
-            <label>Category
+            <label>Section
               <select name="category">
-                <option value="unsorted">Not sure (facilitator decides)</option>
+                <option value="unsorted">Not sure (the facilitator decides)</option>
                 ${S.config.categories.map((c) => html`<option value="${c.id}" ${S.proposeDraft.category === c.id ? 'selected' : ''}>${c.label}</option>`)}
               </select>
             </label>
@@ -628,18 +635,22 @@ async function saveResponse(form, event) {
 
 async function joinAs(person, { guest = false, keepRoute = false } = {}) {
   let locked = S.joined.find((j) => j.code === person.code);
-  if (!locked) {
+  const isNew = !locked;
+  if (isNew) {
+    // Share cases out against an up-to-date list, so that people joining at
+    // about the same time don't all get the same ones.
+    if (guest) await refreshJoined({ ifOlderThan: 2000 });
     const cases = guest
       ? assignGuest(person.code, caseIds(), currentAssignments(S.plan, S.joined), S.config.assignment)
       : S.plan.get(person.code) || [];
-    const record = { code: person.code, name: person.name, cases, guest };
-    await S.store.addParticipant(record);
-    try {
-      S.joined = await S.store.listParticipants({ cache: true });
-    } catch {
-      // offline: carry on with the computed assignment
-    }
-    locked = S.joined.find((j) => j.code === person.code) || record;
+    locked = { code: person.code, name: person.name, cases, guest, created_at: new Date().toISOString() };
+    // Wait a few seconds at most. A refusal comes back quickly and is
+    // reported; on a slow connection the join carries on in the background
+    // (offline, it waits on this device and is sent later).
+    const write = S.store.addParticipant(locked);
+    write.catch(() => {}); // a later failure shows in the sync badge
+    await Promise.race([write, new Promise((resolve) => setTimeout(resolve, 4000))]);
+    S.joined = [...S.joined.filter((j) => j.code !== locked.code), locked];
   }
   const valid = (locked.cases || []).filter((id) => casesById.has(id));
   S.me = { code: locked.code, name: locked.name || person.name, cases: valid.length ? valid : S.plan.get(person.code) || [], guest: Boolean(locked.guest) };
@@ -648,22 +659,48 @@ async function joinAs(person, { guest = false, keepRoute = false } = {}) {
   url.searchParams.set('p', S.me.code);
   if (!keepRoute) url.hash = '#/';
   history.replaceState(null, '', url);
-  S.join = { query: '', error: '', guestName: '', sameNameGuest: null };
-  await loadMine();
+  S.join = { query: '', error: '', hint: '', guestName: '', sameName: [] };
+  // Someone new has nothing to load, so show their cases straight away;
+  // otherwise wait a few seconds at most for their saved answers.
+  const loading = loadMine({ isNew }).then(() => render());
+  if (!isNew) await within(loading, 3000);
   render({ force: true });
   if (!keepRoute) window.scrollTo(0, 0);
 }
 
-// Joining can fail if the database refuses the write (going offline doesn't
-// count: that just queues it), so say so on the join page.
-async function attemptJoin(join) {
+// One join at a time: a second click while the first is still saving would
+// otherwise add the same person twice.
+let joining = false;
+
+async function guardedJoin(button, work) {
+  if (joining) return;
+  joining = true;
+  root.querySelectorAll('.join-form button').forEach((b) => (b.disabled = true));
+  if (button) button.textContent = 'Joining…';
   try {
-    await join();
+    await work();
   } catch (err) {
+    // Not a lost connection (the join then waits to be sent): the database refused it.
     console.error(err);
     S.join.error = `Couldn't join: ${err.message}`;
-    render({ force: true });
+  } finally {
+    joining = false;
   }
+  if (!S.me) {
+    render({ force: true });
+    root.querySelector('#who')?.focus();
+  }
+}
+
+// The latest list of who has joined, waiting a few seconds at most (offline
+// or on a stalled connection, carry on with the list we have). `ifOlderThan`
+// skips the check if one was just made, whether or not it got an answer.
+let joinedCheckedAt = 0;
+async function refreshJoined({ ifOlderThan = 0 } = {}) {
+  if (ifOlderThan && Date.now() - joinedCheckedAt < ifOlderThan) return;
+  const rows = await within(S.store.listParticipants({ cache: true }), 3000);
+  joinedCheckedAt = Date.now();
+  if (rows) S.joined = rows;
 }
 
 // Someone not on the list (or anyone, when there is no list). A random suffix
@@ -677,7 +714,9 @@ async function joinAsNew(name) {
   await joinAs({ code, name }, { guest: true });
 }
 
-async function loadMine() {
+const OFFLINE_NEW = "You're offline for now. Your answers will be kept on this device and sent when the connection is back.";
+
+async function loadMine({ isNew = false } = {}) {
   try {
     const [responses, votes, principles] = await Promise.all([
       S.store.listResponses({ participant: S.me.code, cache: true }),
@@ -688,11 +727,11 @@ async function loadMine() {
     S.myVotes = new Map(votes.map((v) => [`${v.principle_id}:${v.version}`, v]));
     S.principles = principles;
     S.online = S.store.readOk();
-    if (!S.online) toast("You're offline. Showing the answers saved on this device; new ones will sync later.", 'warn', 6000);
+    if (!S.online) toast(isNew ? OFFLINE_NEW : "You're offline. Showing the answers saved on this device; new ones will sync later.", 'warn', 6000);
   } catch (err) {
     console.error(err);
     S.online = false;
-    toast("Couldn't load your saved answers. Check the connection; we'll keep trying.", 'warn', 6000);
+    toast(isNew ? OFFLINE_NEW : "Couldn't load your saved answers. Check the connection; we'll keep trying.", 'warn', 6000);
   }
 }
 
@@ -711,17 +750,32 @@ async function castVote(principleId, voteId, comment) {
 const clickHandlers = {
   async pick(el) {
     const person = everyone().find((p) => p.code === el.dataset.code);
-    if (person) await attemptJoin(() => joinAs(person));
+    if (person) await guardedJoin(el, () => joinAs(person));
   },
-  async 'join-guest'() {
+  async 'join-guest'(el) {
     const name = S.join.guestName.trim();
-    if (name) await attemptJoin(() => joinAsNew(name));
+    if (name) await guardedJoin(el, () => joinAsNew(name));
+  },
+  // Someone else with a name that's taken: ask for something to tell them
+  // apart, rather than putting two identical names on the facilitator's screen.
+  'join-different'() {
+    S.join.sameName = [];
+    S.join.hint = `Please add an initial or your surname, e.g. “${S.join.query} B”, so everyone can tell you apart.`;
+    render({ force: true });
+    const input = root.querySelector('#who');
+    input?.focus();
+    input?.setSelectionRange?.(input.value.length, input.value.length);
   },
   switch() {
     storage.remove(keys.me());
     S.me = null;
     S.responses = new Map();
     S.myVotes = new Map();
+    // Nothing of the last person's should carry over to the next one.
+    S.voteDrafts = new Map();
+    S.proposeDraft = {};
+    S.notified = new Set();
+    S.signature = '';
     const url = new URL(location.href);
     url.searchParams.delete('p');
     url.hash = '';
@@ -748,38 +802,33 @@ const clickHandlers = {
 const submitHandlers = {
   async join(form, event) {
     event.preventDefault();
+    if (joining) return;
     const query = (new FormData(form).get('who')?.toString() || '').replace(/\s+/g, ' ').trim();
-    S.join.query = query;
-    S.join.sameNameGuest = null;
-    S.join.error = '';
-    if (!query) return;
-    const button = form.querySelector('button[type="submit"]');
-    button.disabled = true;
-    button.textContent = 'Joining…';
-    // Others may have joined since this page was opened (or this person, on
-    // another device), so check the latest list before matching the name.
-    try {
-      S.joined = await S.store.listParticipants({ cache: true });
-    } catch {
-      // offline: go with the list we have
+    S.join = { query, error: '', hint: '', guestName: '', sameName: [] };
+    if (!query) {
+      S.join.error = 'Type your name to join.';
+      render({ force: true });
+      root.querySelector('#who')?.focus();
+      return;
     }
-    const allowNew = openJoin() || S.config.join.allowGuests;
-    const { person, confirm } = findPerson(query);
-    if (person && !confirm) return attemptJoin(() => joinAs(person));
-    if (person && confirm) {
-      S.join.sameNameGuest = person;
-      S.join.guestName = allowNew ? query : '';
-    } else if (openJoin()) {
-      return attemptJoin(() => joinAsNew(query));
-    } else if (allowNew) {
-      S.join.error = `We couldn't find “${query}” on the list.`;
-      S.join.guestName = query;
-    } else {
-      S.join.error = `We couldn't find “${query}”. Check your code, or ask the facilitator.`;
-      S.join.guestName = '';
-    }
-    render({ force: true });
-    root.querySelector('#who')?.focus();
+    await guardedJoin(form.querySelector('button[type="submit"]'), async () => {
+      // Others may have joined since this page was opened (or this person, on
+      // another device), so check the latest list before matching the name.
+      await refreshJoined();
+      const { person, matches } = findPerson(query);
+      if (person) return joinAs(person);
+      if (matches.length) {
+        S.join.sameName = matches;
+        return;
+      }
+      if (openJoin()) return joinAsNew(query);
+      if (S.config.join.allowGuests) {
+        S.join.error = `We couldn't find “${query}” on the list.`;
+        S.join.guestName = query;
+      } else {
+        S.join.error = `We couldn't find “${query}”. Check your code, or ask the facilitator.`;
+      }
+    });
   },
   'save-response': saveResponse,
   async propose(form, event) {

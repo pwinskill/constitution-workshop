@@ -132,9 +132,11 @@ export function createSupabaseStore({ url, key, workshop, timeout: defaultTimeou
       return rows;
     } catch (err) {
       if (err.network) readOk = false;
-      const copy = cache && err.network ? storage.get(cacheKey(name)) : null;
-      if (copy) return copy;
-      throw err;
+      if (!cache || !err.network) throw err;
+      // Offline: the last copy, or nothing yet (a first visit with no
+      // connection), so that writes still waiting in the outbox, such as
+      // this person joining, show up after a reload.
+      return storage.get(cacheKey(name)) || [];
     }
   }
 
@@ -265,9 +267,18 @@ export function createSupabaseStore({ url, key, workshop, timeout: defaultTimeou
       return withPending('votes', rows, voteKey, (r) => !participant || r.participant_code === participant);
     },
 
-    addParticipant(person) {
+    async addParticipant(person) {
       const row = { workshop, code: person.code, name: person.name, cases: person.cases, guest: Boolean(person.guest) };
-      return queuedWrite(`participants:${row.code}`, 'participants', row, 'workshop,code', true);
+      const key = `participants:${row.code}`;
+      const result = await queuedWrite(key, 'participants', row, 'workshop,code', true);
+      // Offline, the join waits in the outbox like any other write. But if the
+      // database refused it (wrong key, tables locked), the person would carry
+      // on as if they'd joined while nobody else can see them: say so instead.
+      if (result.queued && lastError && !lastError.network) {
+        writeOutbox(readOutbox().filter((op) => op.key !== key));
+        throw lastError;
+      }
+      return result;
     },
     async removeParticipant(code) {
       await request('DELETE', `participants?${ws}&code=eq.${encodeURIComponent(code)}`);

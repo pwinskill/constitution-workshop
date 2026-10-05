@@ -57,9 +57,9 @@ Then open:
 
 - <http://localhost:8000/facilitator.html?demo=1>: the facilitator view,
   filled with example data.
-- <http://localhost:8000/>: the participant view. Pick a name, or open
-  several tabs as different people. Tabs in the same browser share demo data
-  live.
+- <http://localhost:8000/>: the participant view. Type a name to join. To be
+  several people in one browser, click **Not you?** (top right) and join again
+  under another name. Tabs in the same browser share demo data live.
 
 `python -m http.server 8000` works too. Opening `index.html` straight from disk
 doesn't, because browsers block loading the data files that way.
@@ -84,7 +84,9 @@ error saying which file and roughly where.
 **Assignments.** Each person gets `assignment.casesPerParticipant` cases
 (6 of the 8 in the shipped settings, so everyone sees nearly the same set) when
 they join, picked so that every case gets a similar number of reviewers. With 6
-cases each, every case has at least 3 reviewers once 4 people have joined. As a
+cases each, every case has at least 3 reviewers once 4 people have joined (if
+they join one after another; people joining at the same moment can get the same
+cases, which evens out as more join). As a
 rule of thumb, reviewers per case ≈ people × cases each ÷ number of cases (e.g.
 12 people × 6 ÷ 8 cases ≈ 9); the facilitator page shows the numbers under
 **⚙ Setup → Coverage**. Each person's cases are locked when they join, so
@@ -178,7 +180,7 @@ wrap-up, which leaves 10 minutes spare in an hour and a half.
 | **1 Get ready** | Show the join link. People type their name and appear as they join; meanwhile, talk them through *What we'll do*, the session at a glance. The card on the right says *✓ Connected* (or warns you if not). | 5 min |
 | **2 Review** | Everyone answers their cases on their own laptop. You see progress only; results stay hidden so nobody is swayed. | 15 min |
 | **3 Discuss** | Cases one at a time, most contested first (expect to get through the top 3–4 properly), with the split, the factors and everyone's reasons. **✚ Capture a principle** whenever the group lands on a rule. If discussion stalls, **💡 Show a suggested principle** reveals a prepared rule to test, and **Capture it** adds it (you can edit it first). The **← / →** keys move between cases. | 30 min |
-| **4 Tidy** | Give each principle a section, drop duplicates and fix the wording. Participants' proposals wait under *Needs a section*. A section that's still empty has a **💡 Suggest a principle** button with a rule to test. | 5 min |
+| **4 Tidy** | Give each principle a section, drop duplicates and fix the wording. Participants' proposals wait under *Needs a section*. A section that's still empty has a **💡 Show a suggested principle** button with a rule to test. | 5 min |
 | **5 Vote** | **Open voting**. Participants vote on their Principles tab and see a "Voting is open" banner. Watch the results live. **Adopt** clear winners (or use *Adopt all that reached 67%*). **Reword** ones with lots of *Amend* votes, which starts a fresh vote on the new wording. **Drop** the rest. | 20 min |
 | **6 Finish** | Download the draft constitution and the workshop record. | 5 min |
 

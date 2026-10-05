@@ -13,6 +13,7 @@ import { backupJson, caseRecordMarkdown, constitutionMarkdown, principlesCsv, re
 import { html, raw } from './html.js';
 import { allCaseStats, LEVEL_LABELS, overallTagStats, sortByDisagreement, tallyVotes } from './stats.js';
 import { createStore } from './store.js';
+import { suggestionsFor } from './suggest.js';
 import {
   createRenderer,
   decisionVars,
@@ -30,7 +31,7 @@ import {
   toast,
   voteVars,
 } from './ui.js';
-import { copyText, download, pct, plural, storage, uuid } from './util.js';
+import { copyText, displayUrl, download, orList, pct, plural, storage, uuid } from './util.js';
 
 const root = document.getElementById('app');
 const params = new URLSearchParams(location.search);
@@ -158,8 +159,12 @@ function participantUrl(code) {
   return url.toString();
 }
 
-// For reading off the projector and typing in: browsers add the https:// themselves.
-const displayUrl = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+// The link on the projector, split so that it only wraps after a "/" (never
+// inside a word, or at the hyphen in "constitution-workshop").
+function urlPieces(url) {
+  const parts = displayUrl(url).split('/');
+  return parts.map((part, i) => (i < parts.length - 1 ? html`<span class="url-part">${part}/</span><wbr>` : html`<span class="url-part">${part}</span>`));
+}
 
 // ---- timers (per step, kept in this browser) ---------------------------------------------
 
@@ -282,7 +287,7 @@ const GUIDE = {
   ready: () => html`Put this screen on the projector. Ask everyone to open the link below on their laptop and ${F.config.roster.length ? 'pick' : 'type'} their name. While they join (they appear under <b>Joined so far</b>), talk them through <b>What we'll do</b>.`,
   review: () => html`Everyone works through their cases on their own: where does each change belong, and why? The results stay hidden on this screen so nobody is swayed. Move on when most people have finished; anyone still going can carry on.`,
   discuss: () => html`Start at the top: these are the cases where people disagreed most. Ask someone from each side to explain their reasoning. When the group lands on a rule (“we'd only accept this if…”), click <b>Capture a principle</b>. If things stall, <b>💡 Show a suggested principle</b> gives the group a rule to test.`,
-  tidy: () => html`A quick tidy before voting: give every principle a section, drop duplicates, and fix the wording. A section still empty? Ask the group for a rule, or click <b>💡 Suggest a principle</b> in that section.`,
+  tidy: () => html`A quick tidy before voting: give every principle a section, drop duplicates, and fix the wording. A section still empty? Ask the group for a rule, or click <b class="nowrap">💡 Show a suggested principle</b> in that section.`,
   vote: () => html`Open voting and ask everyone to go to the <b>Principles</b> tab on their laptop. Adopt principles with clear support (${threshold()}% agree or more). If lots of people chose Amend, reword it using their suggestions: that starts a fresh vote on the new wording.`,
   finish: () => html`Download the draft constitution, and keep the workshop record for reference. You can go back to any step if you need to.`,
 };
@@ -323,26 +328,24 @@ function stepPage(stepId, body) {
 // The session at a glance, worded for participants, to talk through while
 // people join. Same numbers as the steps along the top; times from `schedule`.
 const PLAN = {
-  ready: { label: 'Join', text: () => `Open the link and ${F.config.roster.length ? 'pick' : 'type'} your name.` },
+  ready: { text: () => `Open the link and ${F.config.roster.length ? 'pick' : 'type'} your name to join.` },
   review: { text: () => 'On your own, decide where each proposed change belongs, and why.' },
-  discuss: { text: () => 'Together, we talk through the most contested cases and capture principles.' },
+  discuss: { text: () => 'Together, we talk through the most contested cases and turn what we agree on into principles.' },
   tidy: { text: () => 'We sort the principles into sections.' },
   vote: { text: () => `On your laptop, vote ${orList(F.config.votes.map((v) => v.label))} on each principle.` },
   finish: { text: () => 'The adopted principles become a first draft of the constitution.' },
 };
 
-const orList = (items) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} or ${items.at(-1)}` : items[0] || '');
-
 function planCard() {
-  const minutes = (id) => Number(F.config.schedule[id]) || 0;
   return html`<section class="card plan-card">
     <h2 class="card-title">What we'll do</h2>
     <ol class="plan">
       ${STEPS.map((s, i) => {
-        const time = s.id === 'ready' ? 'now' : minutes(s.id) ? `${minutes(s.id)} min` : '';
-        return html`<li class="${s.id === 'ready' ? 'current' : ''}">
+        const now = s.id === 'ready';
+        const time = now ? 'now' : minutesFor(s.id) ? `${minutesFor(s.id)} min` : '';
+        return html`<li class="${now ? 'current' : ''}" aria-current="${now ? 'step' : 'false'}">
           <span class="plan-num" aria-hidden="true">${i + 1}</span>
-          <span class="plan-title">${PLAN[s.id].label || s.label}${time ? html` <span class="plan-time">${time}</span>` : ''}</span>
+          <span class="plan-title">${s.label}${time ? html` <span class="plan-time">${time}</span>` : ''}</span>
           <p class="plan-text">${PLAN[s.id].text()}</p>
         </li>`;
       })}
@@ -361,7 +364,7 @@ function readyView() {
       <div class="ready-grid">
         <section class="card join-panel">
           <p class="eyebrow">Link for participants</p>
-          <p class="join-big">${displayUrl(participantUrl())}</p>
+          <p class="join-big">${urlPieces(participantUrl())}</p>
           <div class="btn-row">
             <button class="btn btn-secondary" data-action="copy-text" data-text="${participantUrl()}">Copy link</button>
             <a class="btn btn-quiet" href="${participantUrl()}" target="_blank" rel="noopener">Open it in a new tab ↗</a>
@@ -374,6 +377,7 @@ function readyView() {
             : F.online
               ? html`<p class="status-big ok">✓ Connected</p><p class="muted">Everyone's answers will appear here.</p>`
               : html`<p class="status-big bad">✕ Can't reach the database</p><p class="muted">Check the internet connection, then use ⚙ Setup → Test connection.</p>`}
+          <p class="joined-count"><span class="joined-figure">${F.joined.length}</span> joined so far</p>
           <p class="muted small">Workshop space: <code>${F.config.id}</code>${params.get('ws') ? ' (a separate practice space)' : ''}</p>
         </section>
       </div>
@@ -622,9 +626,7 @@ function tidyView() {
     html`
       <div class="toolbar">
         <button class="btn btn-secondary" data-action="new-principle">✚ Add a principle</button>
-        <span class="muted small">${active.length
-          ? `${plural(active.length, 'principle')}${unsorted.length ? ` · ${unsorted.length} still need a section` : ' · all have a section ✓'}`
-          : 'No principles yet: capture some in step 3, or start from the suggestions below.'}${empty.length && active.length ? ` · ${plural(empty.length, 'section')} still empty` : ''}</span>
+        <span class="muted small">${tidySummary(active, unsorted, dropped, empty)}</span>
       </div>
       <div class="sections">
         ${unsorted.length ? tidySection({ id: 'unsorted', heading: 'Needs a section', prompt: 'Pick a section for each of these, or drag them into place.' }, unsorted, true) : ''}
@@ -641,7 +643,18 @@ function tidyView() {
   );
 }
 
+function tidySummary(active, unsorted, dropped, empty) {
+  if (!F.principles.length) return 'No principles yet: capture some in step 3, or use 💡 Show a suggested principle in a section below.';
+  if (!active.length) return `All ${plural(dropped.length, 'principle')} dropped: restore one below, or add a new one.`;
+  return [
+    plural(active.length, 'principle'),
+    unsorted.length ? `${unsorted.length} still ${unsorted.length === 1 ? 'needs' : 'need'} a section` : 'all have a section ✓',
+    ...(empty.length ? [`${plural(empty.length, 'section')} still empty`] : []),
+  ].join(' · ');
+}
+
 function tidySection(category, items, highlight = false) {
+  if (items.length) F.ui.sectionSeeds.delete(category.id); // its suggestion was taken, or isn't needed
   const suggestion = items.length || highlight ? null : sectionSuggestions(category.id)[0];
   return html`<section class="section-panel ${highlight ? 'unsorted' : ''} ${items.length ? '' : 'empty-section'}">
     <header class="section-head">
@@ -657,29 +670,23 @@ function tidySection(category, items, highlight = false) {
   </section>`;
 }
 
-// Starter principles for a section with nothing in it yet: the section's own
-// suggestion (workshop.json), then those of the cases aimed at it. Ones already
-// captured (in any section, even if dropped since) aren't offered again.
-function sectionSuggestions(categoryId) {
-  const category = F.config.categories.find((c) => c.id === categoryId);
-  const taken = new Set(F.principles.map((p) => p.text.trim()));
-  return [
-    ...(category?.suggestedPrinciple ? [{ text: category.suggestedPrinciple, caseId: '' }] : []),
-    ...F.config.cases.filter((c) => c.suggestedSection === categoryId && c.suggestedPrinciple).map((c) => ({ text: c.suggestedPrinciple, caseId: c.id })),
-  ].filter((s) => !taken.has(s.text.trim()));
-}
+// Starter principles for a section with nothing in it yet (see suggest.js).
+const sectionSuggestions = (categoryId) => suggestionsFor(F.config, F.principles, categoryId);
 
 function sectionSeed(category, suggestion) {
   if (!F.ui.sectionSeeds.has(category.id)) {
-    return html`<button class="btn btn-quiet btn-small section-seed-btn" data-action="toggle-section-seed" data-section="${category.id}">💡 Suggest a principle</button>`;
+    return html`<button class="btn btn-secondary btn-small section-seed-btn" data-action="toggle-section-seed" data-section="${category.id}">💡 Show a suggested principle</button>`;
   }
   const source = suggestion.caseId ? casesById.get(suggestion.caseId) : null;
   return html`<div class="section-seed">
+    <div class="seed-head">
+      <p class="eyebrow">💡 A principle to test${source ? ` · from case ${source.number}` : ''}</p>
+      <button class="btn-link small" data-action="toggle-section-seed" data-section="${category.id}">Hide</button>
+    </div>
     <p class="seed-text">${suggestion.text}</p>
     <div class="btn-row">
-      <button class="btn btn-primary btn-small" data-action="capture-section-seed" data-section="${category.id}">Capture it</button>
-      <button class="btn-link small" data-action="toggle-section-seed" data-section="${category.id}">Hide</button>
-      ${source ? html`<span class="muted small">From case ${source.number}: ${source.title}</span>` : ''}
+      <button class="btn btn-primary btn-small" data-action="capture-section-seed" data-section="${category.id}" data-text="${suggestion.text}" data-case="${suggestion.caseId}">Capture it</button>
+      <span class="muted small">You can edit the wording before it's added.</span>
     </div>
   </div>`;
 }
@@ -1032,7 +1039,9 @@ function setupView() {
         <button class="btn btn-quiet btn-small" data-action="download-roster">Download participants.json with these assignments</button>
       </div>
       ${open
-        ? html`<p class="muted small">Cases are handed out as people join, so every case gets a similar number of reviewers. With ${config.assignment.perParticipant} cases each, every case has at least ${config.assignment.minReviews} once ${needed === 1 ? 'the first person has' : `${needed} people have`} joined.</p>`
+        ? config.cases.length && config.assignment.minReviews > 0
+          ? html`<p class="muted small">Cases are handed out as people join, so every case gets a similar number of reviewers. With ${config.assignment.perParticipant} cases each, every case has at least ${plural(config.assignment.minReviews, 'reviewer')} once ${needed === 1 ? 'the first person has' : `${needed} people have`} joined (if they join one after another; the table shows the actual numbers).</p>`
+          : ''
         : low.length
           ? html`<p class="notice">${plural(low.length, 'case')} will get fewer than ${config.assignment.minReviews} reviewers. Consider raising <code>casesPerParticipant</code> in <code>data/workshop.json</code>, or using fewer cases.</p>`
           : ''}
@@ -1157,7 +1166,10 @@ function ensureDialog() {
     pressedBackdrop = event.target === dialog;
   });
   dialog.addEventListener('click', (event) => {
-    if ((event.target === dialog && pressedBackdrop) || event.target.closest('[data-close]')) dialog.close();
+    // (Ignore the backdrop just after opening: the second click of a
+    // double-click on "Capture it" would otherwise land there.)
+    const justOpened = Date.now() - (Number(dialog.dataset.openedAt) || 0) < 400;
+    if ((event.target === dialog && pressedBackdrop && !justOpened) || event.target.closest('[data-close]')) dialog.close();
   });
   dialog.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -1205,6 +1217,7 @@ function openPrincipleDialog({ caseId = '', text = '', category = 'unsorted' } =
     </div>
   </form>`;
   dialog.showModal();
+  dialog.dataset.openedAt = String(Date.now());
   dialog.querySelector('textarea').focus();
 }
 
@@ -1259,9 +1272,12 @@ const clickHandlers = {
   },
   'toggle-seed'(el) {
     const id = el.dataset.case;
-    if (F.ui.revealedSeeds.has(id)) F.ui.revealedSeeds.delete(id);
+    const showing = F.ui.revealedSeeds.has(id);
+    if (showing) F.ui.revealedSeeds.delete(id);
     else F.ui.revealedSeeds.add(id);
     render({ force: true });
+    const target = `[data-case="${CSS.escape(id)}"]`;
+    (root.querySelector(`[data-action="${showing ? 'toggle-seed' : 'capture-seed'}"]${target}`) || root.querySelector(`[data-action="toggle-seed"]${target}`))?.focus({ preventScroll: true });
   },
   'capture-seed'(el) {
     const c = casesById.get(el.dataset.case);
@@ -1269,14 +1285,16 @@ const clickHandlers = {
   },
   'toggle-section-seed'(el) {
     const id = el.dataset.section;
-    if (F.ui.sectionSeeds.has(id)) F.ui.sectionSeeds.delete(id);
+    const showing = F.ui.sectionSeeds.has(id);
+    if (showing) F.ui.sectionSeeds.delete(id);
     else F.ui.sectionSeeds.add(id);
     render({ force: true });
+    root.querySelector(`[data-action="${showing ? 'toggle-section-seed' : 'capture-section-seed'}"][data-section="${CSS.escape(id)}"]`)?.focus({ preventScroll: true });
   },
   'capture-section-seed'(el) {
-    const id = el.dataset.section;
-    const s = sectionSuggestions(id)[0];
-    if (s) openPrincipleDialog({ caseId: s.caseId, text: s.text, category: id });
+    // Exactly what's on screen, even if the list of suggestions changed meanwhile.
+    const { section, text } = el.dataset;
+    if (text) openPrincipleDialog({ caseId: el.dataset.case || '', text, category: section });
   },
   'set-status'(el) {
     if (el.dataset.status === 'ratified') sparkleBurst(el, { count: 18, spread: 95 });
