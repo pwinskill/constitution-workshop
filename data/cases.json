@@ -1,0 +1,242 @@
+{
+  "_readme": "Hypothetical proposed changes for participants to judge, numbered in the order they appear here. Cases with \"active\": false are switched off (kept for later): change false to true to bring one back (or add \"active\": false to a case to switch it off). Each case needs a unique 'id' (letters, numbers and dashes; don't change it once the workshop has started). 'upsides' and 'downsides' are optional short bullet lists shown on the card. 'suggestedPrinciple' (optional) is a rule the facilitator can reveal during the discussion to get people going, and 'suggestedSection' says which constitution section it would go in; participants never see either.",
+  "cases": [
+    {
+      "id": "mosquito-behaviour",
+      "title": "More realistic mosquito behaviour",
+      "summary": "Adds outdoor and early-evening biting, parameterised from published entomological data. It enables modelling of residual transmission but slows every simulation by 25–40%, because it changes the core vector–human contact loop.",
+      "upsides": [
+        "Greater biological realism",
+        "Opens up new research and policy questions"
+      ],
+      "downsides": [
+        "Runtime cost paid by all users, including those who don't need it",
+        "More parameters to justify and document"
+      ],
+      "suggestedPrinciple": "A feature that slows every simulation must either benefit most users or be possible to switch off.",
+      "suggestedSection": "performance"
+    },
+    {
+      "id": "country-parameters",
+      "title": "Country-specific parameters in the core package",
+      "summary": "Proposes shipping calibrated parameter sets and input data for 15 countries inside malariasimulation, so new users can run country scenarios straight away.",
+      "upsides": [
+        "Much easier for new users",
+        "Shared, reproducible starting points"
+      ],
+      "downsides": [
+        "Data go out of date: who updates them?",
+        "Mixes model code with data",
+        "Looks like an endorsement of particular calibrations"
+      ],
+      "suggestedPrinciple": "The core model contains mechanisms, not data: country-specific parameters and inputs belong in companion packages.",
+      "suggestedSection": "scope"
+    },
+    {
+      "id": "weak-evidence-intervention",
+      "title": "A promising intervention with little trial data",
+      "summary": "Adds a new vector control tool that several groups want to model. Its effect sizes come from one small trial and a few entomological studies, and the implementation hasn't been fitted or validated against epidemiological data.",
+      "upsides": [
+        "Wide interest across projects",
+        "Lets the group answer questions it currently can't"
+      ],
+      "downsides": [
+        "Weak evidence behind key parameters",
+        "Not fitted or validated against data",
+        "Results may be quoted as if they were robust"
+      ],
+      "suggestedPrinciple": "Interventions with limited evidence can be included if they are clearly marked as experimental, in the code and in every output.",
+      "suggestedSection": "evidence"
+    },
+    {
+      "id": "alternative-immunity",
+      "title": "An alternative immunity formulation",
+      "summary": "A reformulation of acquired clinical immunity fits age–incidence data better across several sites, but materially changes outputs for historical calibrations and published scenarios.",
+      "upsides": [
+        "Better fit to data",
+        "Scientifically motivated and peer reviewed"
+      ],
+      "downsides": [
+        "Published results no longer reproduce with the latest version",
+        "Every active project would need to recalibrate"
+      ],
+      "suggestedPrinciple": "A better fit to data justifies changing the model's behaviour, as long as earlier versions stay available to reproduce past analyses.",
+      "suggestedSection": "technical"
+    },
+    {
+      "id": "not-who-approved",
+      "title": "An intervention not yet approved by WHO",
+      "summary": "Implements a new intervention with encouraging trial results but no WHO recommendation or prequalification yet. National programmes and funders want projections now, to inform decisions before guidance is published.",
+      "upsides": [
+        "Timely: modelling can inform the guideline process itself",
+        "Clear demand from programmes and funders"
+      ],
+      "downsides": [
+        "Could be read as the group endorsing it",
+        "Parameters may change once WHO reviews the evidence"
+      ],
+      "suggestedPrinciple": "The core model may include interventions before WHO recommends them; including an intervention is not an endorsement, and the documentation says so.",
+      "suggestedSection": "governance"
+    },
+    {
+      "id": "external-contribution",
+      "title": "A contribution without a long-term owner",
+      "summary": "A collaborating group contributes a well-written module for spatial mixing between populations. Their funding ends in six months, and nobody in the core team has used the module.",
+      "upsides": [
+        "High-quality, tested code",
+        "Strengthens an external collaboration"
+      ],
+      "downsides": [
+        "No custodian once funding ends",
+        "The core team would inherit the maintenance"
+      ],
+      "suggestedPrinciple": "Code is accepted into the core model only if someone in the core team agrees to look after it for the long term.",
+      "suggestedSection": "maintenance"
+    },
+    {
+      "id": "ai-written-code",
+      "title": "A feature written entirely by an AI coding model",
+      "summary": "A group member submits a new feature whose code was written 100% by a frontier AI coding model, working from their specification. It passes the test suite and a first review, but nobody wrote any of it by hand.",
+      "upsides": [
+        "Delivered quickly, with thorough tests",
+        "Consistent style and good documentation"
+      ],
+      "downsides": [
+        "Nobody knows the code in depth",
+        "Subtle errors can look plausible",
+        "No agreed norms yet for review and attribution"
+      ],
+      "suggestedPrinciple": "Code is held to the same review standard however it was written, and a named person must understand it and take responsibility for it.",
+      "suggestedSection": "technical"
+    },
+    {
+      "id": "bespoke-intervention",
+      "title": "A bespoke intervention for one country analysis",
+      "summary": "A country team needs a new intervention modelled for a Ministry of Health request due next month. Its efficacy estimate comes from a single small study.",
+      "upsides": [
+        "Answers a live policy question",
+        "The code is small and self-contained"
+      ],
+      "downsides": [
+        "Limited evidence behind the parameters",
+        "Only one analysis needs it today",
+        "Adds another user-facing function to maintain"
+      ],
+      "suggestedPrinciple": "Features built for a single analysis should start outside the core model, and move in only once a second use case appears.",
+      "suggestedSection": "scope",
+      "active": false
+    },
+    {
+      "id": "new-output",
+      "title": "A new output variable for one project",
+      "summary": "Adds a new output (e.g. infections by age group and parasite density band) that one project needs. Computational cost is negligible.",
+      "upsides": [
+        "Cheap and low risk",
+        "Others might find it useful later"
+      ],
+      "downsides": [
+        "Every output becomes permanent interface that must be kept",
+        "Could be derived in post-processing instead"
+      ],
+      "suggestedPrinciple": "Anything that can be calculated from existing outputs belongs in post-processing, not in the core model.",
+      "suggestedSection": "scope",
+      "active": false
+    },
+    {
+      "id": "drug-resistance",
+      "title": "A published drug-resistance mechanism",
+      "summary": "Implements a published, peer-reviewed model of partner-drug resistance affecting parasite clearance and late treatment failure. Currently only one project needs it.",
+      "upsides": [
+        "Published and peer reviewed",
+        "Likely to matter for future policy work"
+      ],
+      "downsides": [
+        "One current user",
+        "Interacts with the treatment code in subtle ways"
+      ],
+      "suggestedPrinciple": "Peer-reviewed publication is enough evidence for a mechanism to enter the core model, even if only one project needs it today.",
+      "suggestedSection": "evidence",
+      "active": false
+    },
+    {
+      "id": "performance-refactor",
+      "title": "A pure refactor for speed",
+      "summary": "Rewrites the simulation's hot loop in C++. Outputs are identical and runs are three times faster. The change touches around 2,000 lines, and only two people in the group are comfortable maintaining C++.",
+      "upsides": [
+        "3× faster for everyone",
+        "Identical outputs, so no scientific change"
+      ],
+      "downsides": [
+        "Large diff that is hard to review",
+        "Concentrates maintenance in two people"
+      ],
+      "suggestedPrinciple": "No part of the core model should depend on a skill that fewer than three people in the team have.",
+      "suggestedSection": "maintenance",
+      "active": false
+    },
+    {
+      "id": "unvalidated-mechanism",
+      "title": "A mechanism from a paper, not yet independently validated",
+      "summary": "A new biological mechanism (e.g. superinfection dynamics within the host) developed for a recently submitted paper. It reproduces the paper's figures but hasn't been validated against independent data or reviewed by others.",
+      "upsides": [
+        "Novel science, and the author is keen to share it",
+        "Supports the paper's reproducibility"
+      ],
+      "downsides": [
+        "No independent validation yet",
+        "Hard to remove once people depend on it"
+      ],
+      "suggestedPrinciple": "New mechanisms enter the core model only after they have been validated against data they were not fitted to.",
+      "suggestedSection": "validation",
+      "active": false
+    },
+    {
+      "id": "complex-intervention",
+      "title": "Strong evidence, heavy implementation",
+      "summary": "A new preventive intervention with strong multi-site trial evidence and clear policy demand. Implementing it touches many parts of the model, and it will need ongoing updates as WHO guidance changes.",
+      "upsides": [
+        "Strong evidence and clear demand",
+        "High policy relevance"
+      ],
+      "downsides": [
+        "Complex, cross-cutting implementation",
+        "Long-term maintenance burden"
+      ],
+      "suggestedPrinciple": "Strong evidence and clear policy demand justify a large maintenance burden, provided a named custodian takes it on.",
+      "suggestedSection": "maintenance",
+      "active": false
+    },
+    {
+      "id": "breaking-change",
+      "title": "More realistic, but breaks backwards compatibility",
+      "summary": "Replaces the way seasonality and intervention timing are specified with a more realistic parameterisation. Existing user scripts must be rewritten to run; the author offers a migration guide.",
+      "upsides": [
+        "More realistic and easier to reason about",
+        "Cleaner interface in the long run"
+      ],
+      "downsides": [
+        "Breaks existing scripts and downstream packages",
+        "Old analyses need the old version to rerun"
+      ],
+      "suggestedPrinciple": "Breaking changes are allowed only in major releases, with a migration guide and a deprecation period.",
+      "suggestedSection": "technical",
+      "active": false
+    },
+    {
+      "id": "scenario-builder",
+      "title": "A friendlier interface that duplicates existing functionality",
+      "summary": "A high-level 'scenario builder' that lets new users set up common intervention scenarios in a few lines by wrapping existing functions. It creates a second way of doing things the package can already do.",
+      "upsides": [
+        "Lowers the barrier for new users and country teams",
+        "No new science to validate"
+      ],
+      "downsides": [
+        "Two ways to do the same thing",
+        "Must be kept in sync with every future change"
+      ],
+      "suggestedPrinciple": "There should be one supported way to do each thing in the core package; convenience layers belong in separate packages.",
+      "suggestedSection": "usability",
+      "active": false
+    }
+  ]
+}

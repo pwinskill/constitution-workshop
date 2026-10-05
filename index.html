@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>malariasimulation constitution workshop</title>
+    <meta name="description" content="Workshop tool for deciding what belongs in the malariasimulation core model.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="css/app.css">
+    <script>
+      // Optional ?theme=light or ?theme=dark; otherwise follow the device setting.
+      try {
+        var theme = new URLSearchParams(location.search).get('theme');
+        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+      } catch (e) {}
+    </script>
+    <script type="module" src="js/participant.js"></script>
+  </head>
+  <body>
+    <div id="app" class="app"><p class="boot">Loading the workshop…</p></div>
+    <noscript><p class="boot">This workshop tool needs JavaScript switched on.</p></noscript>
+  </body>
+</html>

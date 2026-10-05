@@ -1,0 +1,5 @@
+{
+  "_readme": "Optional, and fine to leave empty: people then type their own name when they join, and get their cases there and then (shared out so every case gets a similar number of reviewers). If you'd rather people click their name in a list, add names here, e.g. [ { \"name\": \"Ross\" }, { \"name\": \"Macdonald\" } ]. Optional fields: 'code' (used in personal links; defaults to the name in lower case with dashes) and 'cases' (a fixed list of case ids). Assignments are locked the first time each person opens the app, so adding people later is safe; add them at the end of the list.",
+
+  "participants": []
+}

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Host guide · malariasimulation constitution workshop</title>
+<link rel="icon" href="../favicon.svg">
+<link rel="stylesheet" href="guide.css">
+<style>
+  @page {
+    @bottom-left { content: "Host guide · malariasimulation constitution workshop"; font: 7.5pt "Segoe UI", system-ui, sans-serif; color: #8a87a0; }
+    @bottom-right { content: counter(page) " / " counter(pages); font: 7.5pt "Segoe UI", system-ui, sans-serif; color: #8a87a0; }
+  }
+</style>
+</head>
+<body>
+
+<p class="eyebrow">malariasimulation constitution workshop</p>
+<h1>Host guide</h1>
+<p class="lede">Do the steps in order. Setting up and checking takes about 40 minutes, and is best done a few days before.</p>
+
+<div class="grid-2">
+  <div class="linkbox">
+    <div class="label">Participant link · for everyone</div>
+    <div class="value small"><span data-link=""><span class="placeholder">https://&lt;your-github-name&gt;.github.io/constitution-workshop/</span></span></div>
+  </div>
+  <div class="linkbox">
+    <div class="label">Facilitator link · just for you</div>
+    <div class="value small"><span data-link="facilitator.html"><span class="placeholder">…the same, with facilitator.html on the end</span></span></div>
+  </div>
+</div>
+
+<!-- A ------------------------------------------------------------------------------ -->
+<div class="part"><span class="part-letter">A</span><h2>Set up</h2><span class="when">once · about 25 minutes</span></div>
+
+<ol class="steps">
+  <li>
+    <b>Create the database</b>
+    <p>Go to <b>supabase.com</b> and sign in (signing in with GitHub is easiest). Click <span class="btn">New project</span>, pick a region near you (e.g. London) and click <span class="btn">Create new project</span>. It takes a minute or two.</p>
+  </li>
+  <li>
+    <b>Add the tables</b>
+    <p>In the menu on the left, open <b>SQL Editor</b>. Copy everything in <code>supabase/schema.sql</code>, paste it in, and click <span class="btn">Run</span>. It should say <i>Success</i>.</p>
+  </li>
+  <li>
+    <b>Copy the two connection details</b>
+    <p>Click <span class="btn">Connect</span> at the top of the page (or open <b>Project Settings → API Keys</b>). Copy the <b>Project URL</b> and the <b>publishable key</b>, which starts <code>sb_publishable_</code>.</p>
+    <div class="callout warn"><p>Never use the <b>secret</b> or <b>service_role</b> key.</p></div>
+  </li>
+  <li>
+    <b>Paste them into the app</b>
+    <p>Open <code>data/workshop.json</code>, paste them between the quotes near the top, and save:</p>
+<pre>"supabaseUrl": "https://abcdefghij.supabase.co",
+"supabaseKey": "sb_publishable_…"</pre>
+  </li>
+  <li>
+    <b>Make a GitHub repository</b>
+    <p>On <b>github.com</b>, click <span class="btn">+</span> then <b>New repository</b>. Call it <code>constitution-workshop</code>, choose <b>Public</b>, and click <span class="btn">Create repository</span>.</p>
+  </li>
+  <li>
+    <b>Upload the files</b>
+    <p>Click the link <b>uploading an existing file</b>. Drag in everything from the project folder, wait until the uploads finish, and click <span class="btn">Commit changes</span>.</p>
+  </li>
+  <li>
+    <b>Switch the website on</b>
+    <p>Open <b>Settings → Pages</b>. Under <i>Branch</i>, change <b>None</b> to <b>main</b>, keep <b>/ (root)</b>, and click <span class="btn">Save</span>.</p>
+  </li>
+  <li>
+    <b>Note your links</b>
+    <p>Wait a minute or two and refresh. The address it shows (<i>Your site is live at …</i>) is your <b>participant link</b>. Add <code>facilitator.html</code> to the end for your <b>facilitator link</b>. Write both in the boxes at the top.</p>
+    <p class="muted small">To change a file later (say, a typo in a case), open it on GitHub, click the ✎ pencil, edit it and click <b>Commit changes</b>. Changes can take up to 10 minutes to appear.</p>
+  </li>
+</ol>
+
+<!-- B ------------------------------------------------------------------------------ -->
+<div class="part"><span class="part-letter">B</span><h2>Check it works</h2><span class="when">about 15 minutes · a few days before</span></div>
+
+<ol class="steps">
+  <li>
+    <b>Is it connected?</b>
+    <p>Open your facilitator link. The box on the right should say <b>✓ Connected</b>.</p>
+    <div class="grid-2 pics">
+      <figure><img src="img/host-connected.png" alt="✓ Connected"><figcaption><b>Ready.</b></figcaption></figure>
+      <figure><img src="img/host-demo-mode.png" alt="Demo mode"><figcaption><b>Not ready yet.</b> Check <code>data/workshop.json</code> on GitHub (step A5), wait a few minutes and refresh.</figcaption></figure>
+    </div>
+  </li>
+  <li>
+    <b>Test the database</b>
+    <p>Click <span class="btn">⚙</span> (top right), then <span class="btn">Test connection</span>. Every row should have a green ✓. If one shows ✕, the message next to it says what to fix.</p>
+    <img class="half" src="img/host-test-connection.png" alt="Test connection: eight rows, all with a green tick">
+  </li>
+  <li>
+    <b>Get a phone ready for a practice run</b>
+    <p>Use these practice links. They keep the practice separate, so the real workshop still starts empty.</p>
+    <table class="links">
+      <tr><td>On your laptop</td><td><span data-link="facilitator.html?ws=dry-run"><span class="placeholder">your facilitator link + <code>?ws=dry-run</code></span></span></td></tr>
+      <tr><td>On the phone</td><td><span data-link="?ws=dry-run"><span class="placeholder">your participant link + <code>?ws=dry-run</code></span></span></td></tr>
+    </table>
+    <p>Turn the phone's Wi-Fi off, so it's like someone joining from outside.</p>
+  </li>
+  <li>
+    <b>Join</b>
+    <p>Open the practice links. On the phone, type a name and tap <span class="btn">Join</span></p>
+    <p class="expect">The name appears on your laptop under <i>Joined so far</i>.</p>
+  </li>
+  <li>
+    <b>Answer</b>
+    <p>On the phone, answer one case and tap <span class="btn">Save and next case →</span></p>
+    <p class="expect">On the laptop, the <b>Review</b> step shows 1 review done.</p>
+  </li>
+  <li>
+    <b>Add a principle and open voting</b>
+    <p>On the laptop, go to <b>Discuss</b>, click <span class="btn">✚ Capture a principle</span>, type anything and click <span class="btn">Capture</span>. Then go to <b>Vote</b> and click <span class="btn">Open voting</span>.</p>
+  </li>
+  <li>
+    <b>Vote</b>
+    <p>On the phone, tap <span class="btn">Vote now →</span> and vote.</p>
+    <p class="expect">The vote appears on the laptop within a few seconds. Everything works.</p>
+  </li>
+</ol>
+
+<!-- C ------------------------------------------------------------------------------ -->
+<div class="part"><span class="part-letter">C</span><h2>The day before</h2><span class="when">5 minutes</span></div>
+
+<ol class="steps">
+  <li>
+    <b>Wake the database</b>
+    <p>Sign in to supabase.com. If your project says <b>Paused</b>, click <span class="btn">Restore</span> and give it a few minutes. Free projects pause after a week without use.</p>
+  </li>
+  <li>
+    <b>Check the connection</b>
+    <p>Open your facilitator link. Does it say <b>✓ Connected</b>?</p>
+  </li>
+  <li>
+    <b>Send the link</b>
+    <p>Send everyone the participant link and the participant guide, plus the call link for anyone joining online. The guide is on your site at:</p>
+    <p><span data-link="guides/participant-guide.html"><span class="placeholder">your participant link + <code>guides/participant-guide.html</code></span></span></p>
+  </li>
+</ol>
+
+<!-- D ------------------------------------------------------------------------------ -->
+<div class="part"><span class="part-letter">D</span><h2>On the day</h2><span class="when">90 minutes</span></div>
+
+<ol class="steps">
+  <li>
+    <b>Open the facilitator page</b>
+    <p>Plug the laptop into the projector, connect to the Wi-Fi, and open your facilitator link in Chrome or Edge. Press <span class="kbd">F11</span> for full screen, and click <span class="btn">A+</span> (top right) until the text is readable from the back.</p>
+  </li>
+  <li>
+    <b>Bring in the people online</b>
+    <p>Start the call, share your <b>browser window</b>, and paste the participant link into the chat.</p>
+  </li>
+  <li class="long">
+    <b>Work through the six steps</b>
+    <p>They're along the top of the page. Each page says what to do, and <span class="btn">Next →</span> (bottom right) moves you on.</p>
+    <img class="wide" src="img/host-ready.png" alt="The facilitator page on step 1, Get ready, showing the participant link and who has joined">
+    <table class="run">
+      <thead><tr><th>Step</th><th>Time</th><th>What to do</th></tr></thead>
+      <tbody>
+        <tr><td>1 Get ready</td><td>5 min</td><td>Wait until most names appear under <i>Joined so far</i>.</td></tr>
+        <tr><td>2 Review</td><td>15 min</td><td>Click <b>Start timer</b>. Everyone answers on their own, and the results stay hidden. Move on when most have finished.</td></tr>
+        <tr><td>3 Discuss</td><td>30 min</td><td>Start with case 1, which has the most disagreement. Ask someone from each side to explain. When the group agrees on a rule, click <b>✚ Capture a principle</b>. Stuck? Click <b>💡 Show a suggested principle</b>.</td></tr>
+        <tr><td>4 Tidy</td><td>5 min</td><td>Give each principle a section. <b>Drop</b> duplicates and fix the wording.</td></tr>
+        <tr><td>5 Vote</td><td>20 min</td><td>Click <b>Open voting</b>. <b>✓ Adopt</b> principles with clear support (67% agree). <b>Reword</b> any with lots of <i>Amend</i> votes, which starts a new vote. <b>Drop</b> the rest.</td></tr>
+        <tr><td>6 Finish</td><td>5 min</td><td>Click <b>⬇ Download the constitution</b>, then download the workshop record files below it.</td></tr>
+      </tbody>
+    </table>
+    <p class="muted small">That's 80 minutes, which leaves 10 to spare.</p>
+  </li>
+  <li>
+    <b>Before you close the laptop</b>
+    <p>Check that the files from step 6 are saved somewhere safe.</p>
+  </li>
+</ol>
+
+<!-- E ------------------------------------------------------------------------------ -->
+<section class="avoid-break">
+<div class="part"><span class="part-letter">E</span><h2>If something goes wrong</h2></div>
+
+<table class="fix">
+  <thead><tr><th>What you see</th><th>What to do</th></tr></thead>
+  <tbody>
+    <tr><td>It says <b>Demo mode</b></td><td>The website can't see your Supabase details. Check <code>data/workshop.json</code> on GitHub, wait a few minutes and refresh.</td></tr>
+    <tr><td><b>✕ Can't reach the database</b>, or <b>Offline</b></td><td>Check the Wi-Fi. If Supabase says <i>Paused</i>, click <b>Restore</b>. People can keep going: their answers send when the connection is back.</td></tr>
+    <tr><td>Someone typed the wrong name</td><td>They click <b>Not you?</b> (top right) and join again.</td></tr>
+    <tr><td>Someone wants to change laptop</td><td>They open the link on the new one, type the same name, and click <b>Yes, that's me</b>.</td></tr>
+    <tr><td>A page seems stuck</td><td>Refresh it (<span class="kbd">F5</span>). Nothing is lost.</td></tr>
+    <tr><td>The text is too small</td><td>Click <b>A+</b> (top right).</td></tr>
+    <tr><td>You closed the tab</td><td>Open the facilitator link again. It goes back to the same step.</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- F ------------------------------------------------------------------------------ -->
+<div class="part"><span class="part-letter">F</span><h2>Afterwards</h2><span class="when">optional</span></div>
+
+<ol class="steps">
+  <li>
+    <b>Delete the database</b>
+    <p>Once you have the downloads, delete the Supabase project (<b>Project Settings → General → Delete project</b>). To keep it as a read-only record instead, run the lines at the end of <code>supabase/schema.sql</code>.</p>
+  </li>
+  <li>
+    <b>Take the website down</b>
+    <p>In the GitHub repository, open <b>Settings → Pages</b> and unpublish the site, or delete the repository.</p>
+  </li>
+</ol>
+
+<script src="guide.js"></script>
+</body>
+</html>

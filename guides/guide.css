@@ -1,0 +1,263 @@
+/* Shared styles for the host and participant guides: a page in the browser,
+   and A4 when printed. Each guide sets its own page footer in an @page rule. */
+
+@page {
+  size: A4;
+  margin: 14mm 15mm 16mm;
+}
+
+html {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+body {
+  margin: 0;
+  color: #1d1b30;
+  font: 10.3pt/1.5 "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+}
+
+h1, h2, h3 {
+  font-family: "Palatino Linotype", "Iowan Old Style", Palatino, Georgia, serif;
+  line-height: 1.2;
+  color: #1d1b30;
+  break-after: avoid;
+}
+
+h1 { font-size: 25pt; margin: 4mm 0 1.5mm; }
+h2 { font-size: 16pt; margin: 7mm 0 2.5mm; }
+h3 { font-size: 12pt; margin: 4mm 0 1.5mm; }
+
+p { margin: 0 0 2.2mm; }
+ul, ol { margin: 0 0 2.5mm; padding-left: 5.5mm; }
+li { margin: 0 0 1mm; }
+b, strong { font-weight: 650; }
+a { color: inherit; }
+
+.eyebrow {
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #6a6784;
+  margin: 0;
+}
+
+.lede { font-size: 11.5pt; color: #4a4764; }
+.muted { color: #6a6784; }
+.small { font-size: 8.8pt; }
+.avoid-break { break-inside: avoid; }
+
+/* Part headings: a lettered circle, the title, and how long it takes */
+.part {
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+  margin: 2mm 0 3mm;
+  break-inside: avoid;
+  break-after: avoid;
+}
+
+.part-letter {
+  display: inline-grid;
+  place-items: center;
+  width: 10mm;
+  height: 10mm;
+  border-radius: 50%;
+  background: #2b2748;
+  color: #fff;
+  font: 700 13pt "Segoe UI", system-ui, sans-serif;
+  flex: none;
+}
+
+.part h2 { margin: 0; }
+.part .when { margin-left: auto; font-size: 9pt; color: #6a6784; white-space: nowrap; }
+
+/* Numbered steps */
+.steps { counter-reset: step; margin: 0; padding: 0; list-style: none; }
+
+.steps > li {
+  position: relative;
+  padding: 0 0 0 10mm;
+  margin: 0 0 3.6mm;
+  break-inside: avoid;
+}
+
+.steps > li.long { break-inside: auto; }
+
+.steps > li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0; /* not above the item, or a sliver is left behind at a page break */
+  width: 6.8mm;
+  height: 6.8mm;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(120deg, #ffb3d6, #dcc4ff 45%, #a8e8ff);
+  font-weight: 800;
+  font-size: 9.5pt;
+}
+
+.steps > li > b:first-child,
+.steps > li.with-pic > div > b:first-child { display: block; font-size: 11pt; margin-bottom: 0.6mm; }
+
+.steps > li img { display: block; margin: 2mm 0 1mm; border: 0.3mm solid #e2dcef; border-radius: 2.5mm; }
+.steps > li img.wide { width: 100%; }
+.steps > li img.half { width: 46%; }
+
+/* A step with its screenshot beside it */
+.steps > li.with-pic { display: grid; grid-template-columns: 1fr 72mm; gap: 5mm; align-items: start; }
+.steps > li.with-pic img { width: 100%; margin: 0; }
+
+.sub { margin: 1mm 0 2mm; padding-left: 5mm; }
+.sub li { margin-bottom: 0.6mm; }
+
+/* "You should see…" after a practice-run step */
+.expect {
+  display: inline-block;
+  padding: 1mm 3mm;
+  border-radius: 2mm;
+  background: #ebf8f1;
+  color: #0c5a3a;
+}
+.expect::before { content: "✓ "; font-weight: 700; }
+
+.callout {
+  padding: 2.8mm 4mm;
+  margin: 2mm 0 3.5mm;
+  border-radius: 2.5mm;
+  background: #fff6e0;
+  border-left: 1.4mm solid #e09a00;
+  break-inside: avoid;
+}
+.callout p:last-child { margin-bottom: 0; }
+
+.box {
+  border: 0.3mm solid #e2dcef;
+  border-radius: 3mm;
+  padding: 3.5mm 4.5mm;
+  margin: 0 0 3.5mm;
+  break-inside: avoid;
+  background: #fff;
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+
+/* Little pictures of keys, buttons and code */
+code {
+  font-family: Consolas, "Cascadia Mono", "SF Mono", Menlo, monospace;
+  font-size: 0.9em;
+  background: #f1edf9;
+  padding: 0.2mm 1.2mm;
+  border-radius: 1mm;
+}
+
+pre {
+  font: 8.8pt/1.45 Consolas, "Cascadia Mono", "SF Mono", Menlo, monospace;
+  background: #f6f3fc;
+  border: 0.3mm solid #e2dcef;
+  border-radius: 2.5mm;
+  padding: 2.8mm 3.5mm;
+  margin: 1.5mm 0 3mm;
+  white-space: pre-wrap;
+  break-inside: avoid;
+}
+
+.kbd {
+  display: inline-block;
+  padding: 0 1.6mm;
+  border: 0.3mm solid #c9c1de;
+  border-bottom-width: 0.6mm;
+  border-radius: 1.2mm;
+  font-size: 0.88em;
+  font-weight: 650;
+  background: #fff;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0 2mm;
+  border-radius: 3mm;
+  background: linear-gradient(120deg, #ffd0e6, #e6d8ff 50%, #cdf0ff);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+/* Workshop links (filled in by guide.js) */
+.url {
+  font-family: Consolas, "Cascadia Mono", monospace;
+  font-weight: 650;
+  overflow-wrap: break-word;
+}
+a.url { text-decoration: none; border-bottom: 0.3mm solid #c3b4ef; }
+.placeholder { color: #8a7fb8; font-style: italic; }
+
+.blank {
+  display: inline-block;
+  min-width: 120mm;
+  border-bottom: 0.4mm dashed #9a8fc4;
+}
+
+.linkbox {
+  border: 0.6mm solid transparent;
+  border-radius: 4mm;
+  background: linear-gradient(#fff, #fff) padding-box, linear-gradient(120deg, #ff8fc7, #ffc36b, #79dea7, #6ad3e8, #c39bff) border-box;
+  padding: 4mm 5mm;
+  margin: 3mm 0 4mm;
+  break-inside: avoid;
+}
+.grid-2 > .linkbox { margin: 0 0 3mm; }
+.linkbox .label { font-size: 8pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6a6784; }
+.linkbox .value { font-size: 14pt; margin-top: 1mm; }
+.linkbox .value.small { font-size: 10.5pt; }
+
+table { width: 100%; border-collapse: collapse; margin: 1mm 0 3.5mm; }
+th, td { text-align: left; vertical-align: top; padding: 2mm 2.5mm; border-bottom: 0.3mm solid #e8e2f3; }
+thead th { font-size: 8pt; text-transform: uppercase; letter-spacing: 0.06em; color: #6a6784; border-bottom: 0.5mm solid #d8d0ea; }
+tr { break-inside: avoid; }
+td:first-child { font-weight: 600; }
+table.links { margin: 1mm 0 2.5mm; }
+table.links td { padding: 1.5mm 2mm; }
+table.links td:first-child { width: 30mm; white-space: nowrap; }
+table.run td:nth-child(-n+2) { white-space: nowrap; }
+table.fix td:first-child { width: 58mm; }
+
+.pics { gap: 3mm; margin-top: 2mm; }
+.pics figure { margin: 0; break-inside: avoid; }
+.pics img { width: 100%; margin: 0; }
+figcaption { font-size: 8.5pt; color: #6a6784; margin-top: 1.2mm; }
+
+/* The four options for a case, in the app's colours */
+.options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5mm; margin: 1.5mm 0 3.5mm; }
+.options div { border-radius: 2.5mm; padding: 2.5mm 3mm; border: 0.3mm solid #e2dcef; border-top: 1.6mm solid var(--c); font-size: 8.8pt; break-inside: avoid; }
+.options b { display: block; letter-spacing: 0.04em; font-size: 9.6pt; }
+
+.trouble { list-style: none; padding: 0; }
+.trouble li { padding: 2mm 0; border-bottom: 0.3mm solid #ece7f5; margin: 0; break-inside: avoid; }
+.trouble li:last-child { border-bottom: 0; }
+.trouble b { margin-right: 1mm; }
+
+/* In a browser rather than on paper: a page on a desk. */
+@media screen {
+  html { background: #ece9f5; }
+  body { max-width: 180mm; margin: 8mm auto; padding: 12mm 15mm; background: #fff; border-radius: 3mm; box-shadow: 0 2mm 8mm rgba(40, 30, 90, 0.12); }
+}
+
+@media screen and (max-width: 720px) {
+  body { margin: 0; padding: 20px 16px 32px; border-radius: 0; box-shadow: none; }
+  h1 { font-size: 26px; }
+  .grid-2 { grid-template-columns: 1fr; gap: 0; }
+  .options { grid-template-columns: 1fr 1fr; }
+  .steps > li.with-pic { grid-template-columns: 1fr; gap: 2mm; }
+  .steps > li img.half { width: 100%; }
+  .part .when { display: none; }
+  .blank { min-width: 0; width: 100%; }
+  table, thead, tbody, tr, th, td { display: block; }
+  thead { display: none; }
+  td { border: 0; padding: 0.6mm 0; }
+  td:first-child { width: auto !important; }
+  tr { border-bottom: 0.3mm solid #e8e2f3; padding: 2mm 0; }
+}

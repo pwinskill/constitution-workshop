@@ -1,0 +1,100 @@
+{
+  "_readme": "Workshop settings. Edit freely; the app reloads this file on every page load. See README.md for details of each field.",
+
+  "id": "constitution-2026",
+  "title": "malariasimulation constitution workshop",
+  "subtitle": "What belongs in the core model?",
+  "intro": "You'll be shown a few hypothetical proposed changes to malariasimulation. For each one, decide where it belongs and tell us why. Work on your own: there are no right answers, and disagreement is the useful part.",
+
+  "storage": {
+    "_readme": "Leave supabaseUrl empty to run in local demo mode (data stays in this browser). For the real workshop, paste your Supabase project URL and its publishable (or legacy anon) key.",
+    "supabaseUrl": "https://jbbhwvehpsuiihpzufhh.supabase.co",
+    "supabaseKey": "sb_publishable_ONbgqQ5FWuFn2EiTaDaa1Q___MWavGj"
+  },
+
+  "facilitatorKey": "",
+
+  "join": {
+    "showNameList": true,
+    "allowGuests": true
+  },
+
+  "assignment": {
+    "casesPerParticipant": 6,
+    "seed": 2026,
+    "minReviewsPerCase": 3
+  },
+
+  "review": {
+    "requireRationale": true,
+    "askConfidence": true,
+    "maxTags": 3
+  },
+
+  "decisions": [
+    { "id": "core", "label": "CORE", "description": "Merge into malariasimulation" },
+    { "id": "extension", "label": "EXTENSION", "description": "Belongs elsewhere in the malariaverse" },
+    { "id": "experimental", "label": "EXPERIMENTAL", "description": "Potentially core, but not ready" },
+    { "id": "no", "label": "NO", "description": "Should not be maintained in this ecosystem" }
+  ],
+
+  "tags": [
+    { "id": "evidence", "label": "Scientific evidence" },
+    { "id": "generalisability", "label": "Generalisability" },
+    { "id": "validation", "label": "Validation" },
+    { "id": "performance", "label": "Performance" },
+    { "id": "maintainability", "label": "Maintainability" },
+    { "id": "usability", "label": "Usability" },
+    { "id": "backwards-compatibility", "label": "Backwards compatibility" },
+    { "id": "reproducibility", "label": "Reproducibility" },
+    { "id": "ownership", "label": "Ownership / custodianship" },
+    { "id": "other", "label": "Other", "freeText": true }
+  ],
+
+  "confidence": {
+    "labels": ["Very unsure", "Unsure", "Somewhat sure", "Sure", "Very sure"]
+  },
+
+  "categories": [
+    { "id": "purpose", "label": "Purpose", "heading": "Purpose", "prompt": "What is malariasimulation for, and who is it for?" },
+    { "id": "scope", "label": "Scope", "heading": "Scope", "prompt": "What belongs in the core model, and what belongs elsewhere in the malariaverse?" },
+    { "id": "evidence", "label": "Scientific evidence", "heading": "Scientific standards", "prompt": "What evidence should a new mechanism or intervention need?" },
+    { "id": "validation", "label": "Validation", "heading": "Validation", "prompt": "How must changes be tested and validated before they are merged?" },
+    { "id": "technical", "label": "Technical standards", "heading": "Technical standards", "prompt": "Code quality, testing, dependencies, interfaces and backwards compatibility." },
+    { "id": "performance", "label": "Performance", "heading": "Performance and complexity", "prompt": "How much runtime or complexity is a feature allowed to cost?" },
+    { "id": "usability", "label": "Usability", "heading": "Usability", "prompt": "Documentation, defaults and the experience of new users." },
+    { "id": "maintenance", "label": "Maintenance", "heading": "Maintenance and ownership", "prompt": "Who looks after a feature once it is merged, and for how long?" },
+    { "id": "governance", "label": "Governance", "heading": "Governance and decision-making", "prompt": "Who decides, how, and how are decisions recorded and revisited?" }
+  ],
+
+  "votes": [
+    { "id": "agree", "label": "Agree", "hint": "Adopt this wording" },
+    { "id": "amend", "label": "Amend", "hint": "Right idea, but the wording needs work" },
+    { "id": "disagree", "label": "Disagree", "hint": "This shouldn't be a principle" }
+  ],
+
+  "schedule": {
+    "_readme": "Suggested minutes for each facilitator step; each step page shows a timer you can start. Use 0 to hide a timer.",
+    "review": 15,
+    "discuss": 30,
+    "tidy": 5,
+    "vote": 20
+  },
+
+  "ratification": {
+    "_readme": "Share of votes that must be 'agree' before a principle is highlighted as ready to ratify. The facilitator still decides.",
+    "threshold": 0.67
+  },
+
+  "disagreement": {
+    "_readme": "Disagreement is the chance that two randomly chosen reviewers of a case picked different options (0 = unanimous, 1 = everyone different). Cases need at least minResponses answers before they are labelled.",
+    "high": 0.55,
+    "some": 0.3,
+    "minResponses": 3
+  },
+
+  "export": {
+    "title": "malariasimulation constitution",
+    "preamble": "This document sets out the principles the malariasimulation team uses to decide what belongs in the core model and what belongs elsewhere in the malariaverse. It is a living draft, first agreed at a team workshop."
+  }
+}
